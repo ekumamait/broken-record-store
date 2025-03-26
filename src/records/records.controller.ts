@@ -9,12 +9,15 @@ import {
   Delete,
 } from '@nestjs/common';
 import { Record } from '../schemas/record.schema';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { CreateRecordRequestDTO } from './dto/create-record.dto';
 import { RecordCategory, RecordFormat } from '../common/enums/record.enum';
 import { UpdateRecordRequestDTO } from './dto/update-record.dto';
 import { RecordsService } from './records.service';
 import { ApiResponse } from '../common/utils/api-response.util';
+import { FilterRecordDto } from './dto/filter-record.dto';
+import { PaginatedResponse } from '../common/utils/paginated-response.util';
+import { UseCache } from '../cache/cache.decorator';
 
 @ApiTags('Records')
 @Controller({ path: 'records', version: '1' })
@@ -23,7 +26,9 @@ export class RecordsController {
 
   @Post()
   async create(@Body() request: CreateRecordRequestDTO): Promise<ApiResponse<Record>> {
-    return await this.recordsService.createRecord(request);
+    const result = await this.recordsService.createRecord(request);
+    await this.recordsService.invalidateRecordsCache();
+    return result;
   }
 
   @Put(':id')
@@ -31,61 +36,32 @@ export class RecordsController {
     @Param('id') id: string,
     @Body() updateRecordDto: UpdateRecordRequestDTO,
   ): Promise<ApiResponse<Record>> {
-    return await this.recordsService.updateRecord(id, updateRecordDto);
+    const result = await this.recordsService.updateRecord(id, updateRecordDto);
+    await this.recordsService.invalidateRecordsCache();
+    await this.recordsService.invalidateRecordCache(id);
+    return result;
   }
 
   @Get()
-  @ApiQuery({
-    name: 'q',
-    required: false,
-    description:
-      'Search query (search across multiple fields like artist, album, category, etc.)',
-    type: String,
-  })
-  @ApiQuery({
-    name: 'artist',
-    required: false,
-    description: 'Filter by artist name',
-    type: String,
-  })
-  @ApiQuery({
-    name: 'album',
-    required: false,
-    description: 'Filter by album name',
-    type: String,
-  })
-  @ApiQuery({
-    name: 'format',
-    required: false,
-    description: 'Filter by record format (Vinyl, CD, etc.)',
-    enum: RecordFormat,
-    type: String,
-  })
-  @ApiQuery({
-    name: 'category',
-    required: false,
-    description: 'Filter by record category (e.g., Rock, Jazz)',
-    enum: RecordCategory,
-    type: String,
-  })
+  @UseCache({ keyPrefix: 'records:list', ttl: 300 })
   async findAll(
-    @Query('q') q?: string,
-    @Query('artist') artist?: string,
-    @Query('album') album?: string,
-    @Query('format') format?: RecordFormat,
-    @Query('category') category?: RecordCategory,
-  ): Promise<ApiResponse<Record[]>> {
-    return await this.recordsService.findAllRecords(q, artist, album, format, category);
+    @Query() filterDto: FilterRecordDto
+  ): Promise<ApiResponse<PaginatedResponse<Record>>> {
+    return await this.recordsService.findAllRecords(filterDto);
   }
 
   @Get(':id')
+  @UseCache({ keyPrefix: 'records:detail', ttl: 600 })
   async findOne(@Param('id') id: string): Promise<ApiResponse<Record>> {
     return await this.recordsService.findOneRecord(id);
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<ApiResponse<any>> {
-    return await this.recordsService.removeRecord(id);
+    const result = await this.recordsService.removeRecord(id);
+    await this.recordsService.invalidateRecordsCache();
+    await this.recordsService.invalidateRecordCache(id);
+    return result;
   }
 }
 

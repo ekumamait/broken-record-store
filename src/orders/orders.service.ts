@@ -6,18 +6,28 @@ import { Model } from 'mongoose';
 import { Record } from 'src/schemas/record.schema';
 import { Order } from 'src/schemas/order.schema';
 import { ApiResponse } from 'src/common/utils/api-response.util';
+import { CacheService } from 'src/cache/cache.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectModel('Record') private readonly recordModel: Model<Record>,
     @InjectModel('Order') private readonly orderModel: Model<Order>,
-  ) {}
+    private readonly cacheService: CacheService,
+  ) { }
+
+  async invalidateRecordsCache(): Promise<void> {
+    await this.cacheService.invalidateByPattern('orders:list:*');
+  }
+
+  async invalidateRecordCache(id: string): Promise<void> {
+    await this.cacheService.invalidateByPattern(`orders:detail:*${id}*`);
+  }
 
   async createOrder(createOrderDto: CreateOrderRequestDTO): Promise<ApiResponse<Order>> {
     try {
       const { recordId, quantity } = createOrderDto;
-      
+
       const record = await this.recordModel.findById(recordId);
       if (!record) {
         return ApiResponse.notFound('Record not found');
@@ -93,7 +103,7 @@ export class OrdersService {
 
         // Calculate stock difference
         const quantityDifference = updateOrderDto.quantity - order.quantity;
-        
+
         // Check if we have enough stock for an increase
         if (quantityDifference > 0 && record.qty < quantityDifference) {
           return ApiResponse.badRequest('Insufficient stock for quantity increase');
@@ -112,7 +122,7 @@ export class OrdersService {
           if (updateOrderDto.quantity) {
             order.totalPrice = record.price * updateOrderDto.quantity;
           }
-          
+
           await order.save({ session });
           await session.commitTransaction();
         } catch (error) {
@@ -154,7 +164,7 @@ export class OrdersService {
 
             // Delete the order
             await this.orderModel.findByIdAndDelete(id, { session });
-            
+
             await session.commitTransaction();
           } catch (error) {
             await session.abortTransaction();

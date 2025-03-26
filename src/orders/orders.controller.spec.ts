@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 import { CreateOrderRequestDTO } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { ApiResponse } from '../common/utils/api-response.util';
 import { PaginatedResponse } from '../common/utils/paginated-response.util';
 import { Types } from 'mongoose';
@@ -20,7 +19,6 @@ describe('OrdersController', () => {
     status: 'pending',
     created: new Date(),
     lastModified: new Date(),
-    // Add other required properties
   } as unknown as Order;
   
   beforeEach(async () => {

@@ -4,17 +4,15 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { CacheService } from '../cache/cache.service';
 import { MusicBrainzService } from '../musicbrainz/musicbrainz.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { Record } from '../schemas/record.schema';
 import { RecordCategory, RecordFormat } from '../common/enums/record.enum';
-import { HttpModule } from '@nestjs/axios';  // Import HttpModule
-import { ApiResponse } from '../common/utils/api-response.util';
+import { HttpModule } from '@nestjs/axios';
 import { HttpStatus } from '@nestjs/common';
 import { CreateRecordRequestDTO } from './dto/create-record.dto';
 import { PaginatedResponse } from '../common/utils/paginated-response.util';
 
 describe('RecordsService', () => {
   let service: RecordsService;
-  let recordModel: any;  // Mock the Mongoose model
+  let recordModel: any; 
   let cacheService: CacheService;
   let musicBrainzService: MusicBrainzService;
 
@@ -61,9 +59,9 @@ describe('RecordsService', () => {
       };
     const mockRecord = { ...createRecordDto, _id: '67e3e30a810d696976b8f05f', trackList: [] };
   
-    jest.spyOn(recordModel, 'findOne').mockResolvedValue(null);  // No existing record
+    jest.spyOn(recordModel, 'findOne').mockResolvedValue(null); 
     jest.spyOn(recordModel, 'create').mockResolvedValue(mockRecord);
-    jest.spyOn(musicBrainzService, 'getAlbumDetails').mockResolvedValue([]);  // Mock MBID response
+    jest.spyOn(musicBrainzService, 'getAlbumDetails').mockResolvedValue([]);
   
     const response = await service.createRecord(createRecordDto);
     expect(response.statusCode).toBe(HttpStatus.CREATED);
@@ -82,7 +80,7 @@ describe('RecordsService', () => {
     };
     const existingRecord = { ...createRecordDto, _id: '67e3e30a810d696976b8f05f' };
   
-    jest.spyOn(recordModel, 'findOne').mockResolvedValue(existingRecord);  // Simulate existing record
+    jest.spyOn(recordModel, 'findOne').mockResolvedValue(existingRecord);
   
     const response = await service.createRecord(createRecordDto);
     expect(response.statusCode).toBe(HttpStatus.CONFLICT);
@@ -95,7 +93,7 @@ describe('RecordsService', () => {
     const mockRecord = { artist: 'Old Artist', album: 'Album', format: 'Vinyl', _id: '67e3e30a810d696976b8f05f' };
   
     jest.spyOn(recordModel, 'findById').mockResolvedValue(mockRecord);
-    jest.spyOn(recordModel, 'findOne').mockResolvedValue(existingRecord);  // Duplicate found
+    jest.spyOn(recordModel, 'findOne').mockResolvedValue(existingRecord);
   
     const response = await service.updateRecord('1', updateRecordDto);
     expect(response.statusCode).toBe(HttpStatus.CONFLICT);

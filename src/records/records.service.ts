@@ -13,7 +13,7 @@ export class RecordsService {
     @InjectModel('Record') private readonly recordModel: Model<Record>,
   ) {}
 
-  async create(createRecordDto: CreateRecordRequestDTO): Promise<ApiResponse<Record>> {
+  async createRecord(createRecordDto: CreateRecordRequestDTO): Promise<ApiResponse<Record>> {
     const newRecord = await this.recordModel.create({
       ...createRecordDto
     });
@@ -24,7 +24,7 @@ export class RecordsService {
     return ApiResponse.created(newRecord, 'Record created successfully');
   }
 
-  async update(id: string, updateRecordDto: UpdateRecordRequestDTO): Promise<ApiResponse<Record>> {
+  async updateRecord(id: string, updateRecordDto: UpdateRecordRequestDTO): Promise<ApiResponse<Record>> {
     try {
       const record = await this.recordModel.findById(id);
       if (!record) {
@@ -44,7 +44,7 @@ export class RecordsService {
     }
   }
 
-  async findAll(
+  async findAllRecords(
     q?: string,
     artist?: string,
     album?: string,
@@ -90,7 +90,7 @@ export class RecordsService {
     }
   }
 
-  async findOne(id: string): Promise<ApiResponse<Record>> {
+  async findOneRecord(id: string): Promise<ApiResponse<Record>> {
     try {
       const record = await this.recordModel.findById(id).exec();
       if (!record) {
@@ -102,7 +102,7 @@ export class RecordsService {
     }
   }
 
-  async remove(id: string): Promise<ApiResponse<any>> {
+  async removeRecord(id: string): Promise<ApiResponse<any>> {
     try {
       const result = await this.recordModel.findByIdAndDelete(id).exec();
       if (!result) {

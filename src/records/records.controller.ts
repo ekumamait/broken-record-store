@@ -7,11 +7,16 @@ import {
   Query,
   Put,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { Record } from '../schemas/record.schema';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../authentication/guards/jwt.guard';
+
 import { CreateRecordRequestDTO } from './dto/create-record.dto';
-import { RecordCategory, RecordFormat } from '../common/enums/record.enum';
+import { Roles } from '../authentication/decorators/roles.decorator';
+import { RolesGuard } from '../authentication/guards/roles.guard';
 import { UpdateRecordRequestDTO } from './dto/update-record.dto';
 import { RecordsService } from './records.service';
 import { ApiResponse } from '../common/utils/api-response.util';
@@ -25,6 +30,7 @@ export class RecordsController {
   constructor(private readonly recordsService: RecordsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async create(@Body() request: CreateRecordRequestDTO): Promise<ApiResponse<Record>> {
     const result = await this.recordsService.createRecord(request);
     await this.recordsService.invalidateRecordsCache();
@@ -32,6 +38,7 @@ export class RecordsController {
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async update(
     @Param('id') id: string,
     @Body() updateRecordDto: UpdateRecordRequestDTO,
@@ -57,6 +64,7 @@ export class RecordsController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async remove(@Param('id') id: string): Promise<ApiResponse<any>> {
     const result = await this.recordsService.removeRecord(id);
     await this.recordsService.invalidateRecordsCache();

@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RecordController } from './record.controller';
+import { RecordsController } from './records.controller';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Record } from '../schemas/record.schema';
-import { CreateRecordRequestDTO } from '../dtos/create-record.request.dto';
-import { RecordCategory, RecordFormat } from '../schemas/record.enum';
+import { CreateRecordRequestDTO } from './dto/create-record.dto';
+import {Record } from '../schemas/record.schema';
+import { RecordCategory, RecordFormat } from '../common/enums/record.enum';
 
 describe('RecordController', () => {
-  let recordController: RecordController;
+  let recordsController: RecordsController;
   let recordModel: Model<Record>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [RecordController],
+      controllers: [RecordsController],
       providers: [
         {
           provide: getModelToken('Record'),
@@ -28,8 +28,12 @@ describe('RecordController', () => {
       ],
     }).compile();
 
-    recordController = module.get<RecordController>(RecordController);
+    recordsController = module.get<RecordsController>(RecordsController);
     recordModel = module.get<Model<Record>>(getModelToken('Record'));
+  });
+
+  it('should be defined', () => {
+    expect(recordsController).toBeDefined();
   });
 
   it('should create a new record', async () => {
@@ -51,7 +55,7 @@ describe('RecordController', () => {
 
     jest.spyOn(recordModel, 'create').mockResolvedValue(savedRecord as any);
 
-    const result = await recordController.create(createRecordDto);
+    const result = await recordsController.create(createRecordDto);
     expect(result).toEqual(savedRecord);
     expect(recordModel.create).toHaveBeenCalledWith({
       artist: 'Test',
@@ -73,8 +77,9 @@ describe('RecordController', () => {
       exec: jest.fn().mockResolvedValue(records),
     } as any);
 
-    const result = await recordController.findAll();
+    const result = await recordsController.findAll();
     expect(result).toEqual(records);
     expect(recordModel.find).toHaveBeenCalled();
   });
 });
+

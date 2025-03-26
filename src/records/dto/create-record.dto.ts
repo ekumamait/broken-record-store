@@ -1,5 +1,6 @@
 import {
   IsString,
+  IsNotEmpty,
   IsNumber,
   Min,
   Max,
@@ -8,78 +9,69 @@ import {
   IsOptional,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { RecordFormat, RecordCategory } from '../schemas/record.enum';
+import { RecordFormat, RecordCategory } from '../../common/enums/record.enum';
 
-export class UpdateRecordRequestDTO {
+export class CreateRecordRequestDTO {
   @ApiProperty({
     description: 'Artist of the record',
     type: String,
     example: 'The Beatles',
-    required: false,
   })
   @IsString()
-  @IsOptional()
-  artist?: string;
+  @IsNotEmpty()
+  artist: string;
 
   @ApiProperty({
     description: 'Album name',
     type: String,
     example: 'Abbey Road',
-    required: false,
   })
   @IsString()
-  @IsOptional()
-  album?: string;
+  @IsNotEmpty()
+  album: string;
 
   @ApiProperty({
     description: 'Price of the record',
     type: Number,
     example: 30,
-    required: false,
   })
   @IsNumber()
   @Min(0)
   @Max(10000)
-  @IsOptional()
-  price?: number;
+  price: number;
 
   @ApiProperty({
     description: 'Quantity of the record in stock',
     type: Number,
     example: 1000,
-    required: false,
   })
   @IsInt()
   @Min(0)
   @Max(100)
-  @IsOptional()
-  qty?: number;
+  qty: number;
 
   @ApiProperty({
     description: 'Format of the record (Vinyl, CD, etc.)',
     enum: RecordFormat,
     example: RecordFormat.VINYL,
-    required: false,
   })
   @IsEnum(RecordFormat)
-  @IsOptional()
-  format?: RecordFormat;
+  @IsNotEmpty()
+  format: RecordFormat;
 
   @ApiProperty({
     description: 'Category or genre of the record (e.g., Rock, Jazz)',
     enum: RecordCategory,
     example: RecordCategory.ROCK,
-    required: false,
   })
   @IsEnum(RecordCategory)
-  @IsOptional()
-  category?: RecordCategory;
+  @IsNotEmpty()
+  category: RecordCategory;
 
   @ApiProperty({
     description: 'Musicbrainz identifier',
     type: String,
     example: 'b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d',
-    required: false,
   })
   @IsOptional()
   mbid?: string;

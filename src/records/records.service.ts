@@ -1,19 +1,21 @@
-import { Injectable, InternalServerErrorException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Record } from '../schemas/record.schema';
 import { CreateRecordRequestDTO } from './dto/create-record.dto';
 import { UpdateRecordRequestDTO } from './dto/update-record.dto';
-import { ApiResponse } from 'src/common/utils/api-response.util';
+import { ApiResponse } from '../common/utils/api-response.util';
 import { FilterRecordDto } from './dto/filter-record.dto';
 import { PaginatedResponse } from '../common/utils/paginated-response.util';
 import { CacheService } from '../cache/cache.service';
+import { MusicBrainzService } from '../musicbrainz/musicbrainz.service';
 
 @Injectable()
 export class RecordsService {
   constructor(
     @InjectModel('Record') private readonly recordModel: Model<Record>,
     private readonly cacheService: CacheService,
+    private readonly musicBrainzService: MusicBrainzService,
   ) {}
 
   async invalidateRecordsCache(): Promise<void> {
@@ -26,9 +28,32 @@ export class RecordsService {
 
   async createRecord(createRecordDto: CreateRecordRequestDTO): Promise<ApiResponse<Record>> {
     try {
-      const newRecord = await this.recordModel.create({
-        ...createRecordDto
+      const existingRecord = await this.recordModel.findOne({
+        artist: createRecordDto.artist,
+        album: createRecordDto.album,
+        format: createRecordDto.format,
       });
+
+      if (existingRecord) {
+        return ApiResponse.error(
+          'Record already exists with this artist, album, and format combination',
+          HttpStatus.CONFLICT
+        );
+      }
+      const recordData = { ...createRecordDto };
+      if (createRecordDto.mbid) {
+        try {
+          const trackList = await this.musicBrainzService.getAlbumDetails(createRecordDto.mbid);
+          if (trackList && trackList.length > 0) {
+            recordData.trackList = trackList;
+          }
+        } catch (error) {
+          return ApiResponse.error(`Failed to fetch track list for MBID ${createRecordDto.mbid}: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR, error);
+
+        }
+      }
+
+      const newRecord = await this.recordModel.create(recordData);
 
       if (!newRecord) {
         return ApiResponse.error('Failed to create record');
@@ -45,6 +70,33 @@ export class RecordsService {
       const record = await this.recordModel.findById(id);
       if (!record) {
         return ApiResponse.notFound(`Record with ID ${id} not found`);
+      }
+
+      if (updateRecordDto.mbid && updateRecordDto.mbid !== record.mbid) {
+        try {
+          const trackList = await this.musicBrainzService.getAlbumDetails(updateRecordDto.mbid);
+          if (trackList && trackList.length > 0) {
+            updateRecordDto.trackList = trackList;
+          }
+        } catch (error) {
+          return ApiResponse.error(`Failed to fetch track list for MBID ${updateRecordDto.mbid}: ${error.message}`);
+        }
+      }
+
+      if (updateRecordDto.artist || updateRecordDto.album || updateRecordDto.format) {
+        const potentialDuplicate = await this.recordModel.findOne({
+          artist: updateRecordDto.artist || record.artist,
+          album: updateRecordDto.album || record.album,
+          format: updateRecordDto.format || record.format,
+          _id: { $ne: id },
+        });
+
+        if (potentialDuplicate) {
+          return ApiResponse.error(
+            'Update would create a duplicate record with the same artist, album, and format',
+            HttpStatus.CONFLICT
+          );
+        }
       }
 
       Object.assign(record, updateRecordDto);
@@ -71,7 +123,7 @@ export class RecordsService {
       
       if (q) {
         // Using $text search if you have a text index set up
-        if (this.hasTextIndex()) {
+        if (await this.hasTextIndex()) {
           filter.$text = { $search: q };
         } else {
           // Fallback to regex if no text index

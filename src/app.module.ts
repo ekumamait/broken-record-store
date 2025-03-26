@@ -1,23 +1,27 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { AppConfig } from './app.config';
-import { RecordsModule } from './records/records.module';
-import { OrdersModule } from './orders/orders.module';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { CacheModule } from './cache/cache.module';
-import { CacheInterceptor } from './cache/cache.interceptor';
+import { Module } from "@nestjs/common";
+import { MongooseModule } from "@nestjs/mongoose";
+import { AppConfig } from "./app.config";
+import { RecordsModule } from "./records/records.module";
+import { OrdersModule } from "./orders/orders.module";
+import { AuthModule } from "./authentication/auth.module";
+import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
+import { CacheModule } from "./cache/cache.module";
+import { CacheInterceptor } from "./cache/cache.interceptor";
 
 @Module({
   imports: [
     MongooseModule.forRoot(AppConfig.mongoUrl),
-    ThrottlerModule.forRoot([{
-      ttl: 60,
-      limit: 10,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60,
+        limit: 10,
+      },
+    ]),
     CacheModule,
     RecordsModule,
-    OrdersModule
+    OrdersModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [
@@ -28,7 +32,7 @@ import { CacheInterceptor } from './cache/cache.interceptor';
     {
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor,
-    }
+    },
   ],
 })
 export class AppModule {}

@@ -4,7 +4,7 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 @Schema({ timestamps: true })
 export class Order extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Record', required: true })
-  recordId: string;
+  recordId: MongooseSchema.Types.ObjectId;
 
   @Prop({ required: true, min: 1 })
   quantity: number;
@@ -14,6 +14,12 @@ export class Order extends Document {
 
   @Prop({ default: 'pending', enum: ['pending', 'completed', 'cancelled'] })
   status: string;
+
+  @Prop({ default: Date.now })
+  created: Date;
+
+  @Prop({ default: Date.now })
+  lastModified: Date;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order); 

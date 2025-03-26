@@ -1,11 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderRequestDTO } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { ApiTags} from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/utils/api-response.util';
-import { Order } from 'src/schemas/order.schema';
-import { UseCache } from 'src/cache/cache.decorator';
+import { ApiTags } from '@nestjs/swagger';
+import { ApiResponse } from '../common/utils/api-response.util';
+import { Order } from '../schemas/order.schema';
+import { UseCache } from '../cache/cache.decorator';
+import { PaginatedResponse } from '../common/utils/paginated-response.util';
 
 @ApiTags('Orders')
 @Controller({ path: 'orders', version: '1' })
@@ -14,36 +15,42 @@ export class OrdersController {
 
   @Post()
   async create(@Body() createOrderDto: CreateOrderRequestDTO): Promise<ApiResponse<Order>> {
-    const result = await this.ordersService.createOrder(createOrderDto);
-    await this.ordersService.invalidateRecordsCache();
+    const result = await this.ordersService.create(createOrderDto);
+    await this.ordersService.invalidateOrdersCache();
     return result;
   }
 
   @Get()
-  @UseCache({ keyPrefix: 'orders:list', ttl: 600 })
-  async findAll(): Promise<ApiResponse<Order[]>> {
-    return await this.ordersService.findAll();
+  @UseCache({ keyPrefix: 'orders:list', ttl: 300 })
+  async findAll(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10
+  ): Promise<ApiResponse<PaginatedResponse<Order>>> {
+    return await this.ordersService.findAll(+page, +limit);
   }
 
   @Get(':id')
-  @UseCache({ keyPrefix: 'orders:detail', ttl: 600 })
+  @UseCache({ keyPrefix: 'orders:detail', ttl: 300 })
   async findOne(@Param('id') id: string): Promise<ApiResponse<Order>> {
     return await this.ordersService.findOne(id);
   }
 
   @Patch(':id')
   async update(
-    @Param('id') id: string, 
+    @Param('id') id: string,
     @Body() updateOrderDto: UpdateOrderDto
   ): Promise<ApiResponse<Order>> {
-    return await this.ordersService.update(id, updateOrderDto);
+    const result = await this.ordersService.update(id, updateOrderDto);
+    await this.ordersService.invalidateOrdersCache();
+    await this.ordersService.invalidateOrderCache(id);
+    return result;
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<ApiResponse<any>> {
     const result = await this.ordersService.remove(id);
-    await this.ordersService.invalidateRecordsCache();
-    await this.ordersService.invalidateRecordCache(id);
+    await this.ordersService.invalidateOrdersCache();
+    await this.ordersService.invalidateOrderCache(id);
     return result;
   }
 }

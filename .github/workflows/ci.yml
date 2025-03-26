@@ -30,7 +30,12 @@ jobs:
       run: npm run lint
     
     - name: Run tests with coverage
-      run: npm run test:coverage
+      run: |
+        npm run test:coverage
+        if [ $? -eq 1 ]; then
+          echo "Tests failed or coverage threshold not met"
+          exit 1
+        fi
     
     - name: Upload coverage reports
       uses: codecov/codecov-action@v3

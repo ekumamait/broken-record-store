@@ -37,4 +37,4 @@ lerna-debug.log*
 
 .env
 coverage/
-.husky/_
+.husky/

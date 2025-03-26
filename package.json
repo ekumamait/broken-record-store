@@ -18,7 +18,7 @@
     "lint-staged": "lint-staged",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test:coverage": "jest --coverage --coverageReporters=text-summary --coverageReporters=lcov --coverageReporters=json-summary",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json --detectOpenHandles --forceExit",
     "setup:db": "ts-node -r tsconfig-paths/register setup-db.ts"
@@ -59,7 +59,7 @@
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
-    "husky": "^9.1.7",
+    "husky": "^8.0.0",
     "jest": "^29.7.0",
     "lint-staged": "^15.5.0",
     "prettier": "^3.0.0",
@@ -86,7 +86,15 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "global": {
+        "branches": 20,
+        "functions": 40,
+        "lines": 40,
+        "statements": 40
+      }
+    }
   },
   "husky": {
     "hooks": {

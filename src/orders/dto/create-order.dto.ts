@@ -1,10 +1,13 @@
 import { IsString, IsNotEmpty, IsInt, Min } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateOrderRequestDTO {
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   recordId: string;
 
+  @ApiProperty()
   @IsInt()
   @Min(1)
   quantity: number;

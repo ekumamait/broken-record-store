@@ -32,6 +32,7 @@ export const MESSAGES = {
     INTERNAL_SERVER: "Internal server error",
     RECORDS: {
       NOT_FOUND: "Record not found",
+      RECORD_NOT_FOUND: (id: string) => `Record with ID ${id} not found`,
       ASSOCIATE_NOT_FOUND: "Record associated with this order not found",
       DUPLICATE:
         "Record already exists with this artist, album, and format combination",
@@ -43,9 +44,14 @@ export const MESSAGES = {
       DELETE_ERROR: "Error deleting record",
       RETRIEVE_ERROR: "Error retrieving record",
       LIST_RETRIEVE_ERROR: "Error retrieving records",
+      INVALID_MBID: (mbid: string) =>
+        `Invalid MusicBrainz ID (MBID) format: ${mbid}`,
+      MBID_NOT_FOUND: (mbid: string) =>
+        `MusicBrainz ID (MBID) ${mbid} not found in MusicBrainz database`,
     },
     ORDERS: {
       NOT_FOUND: "Order not found",
+      ORDER_NOT_FOUND: (id: string) => `Order with ID ${id} not found`,
       INSUFFICIENT_STOCK: "Not enough records in stock",
       CREATE_ERROR: "Error creating order",
       UPDATE_ERROR: "Error updating order",
@@ -57,6 +63,7 @@ export const MESSAGES = {
       INVALID_CREDENTIALS: "Invalid credentials",
       USER_EXISTS: "User already exists",
       INACTIVE_USER: "User account is inactive",
+      LOGIN_FAILED: "Login failed",
     },
   },
 };

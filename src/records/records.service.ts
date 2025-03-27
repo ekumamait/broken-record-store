@@ -32,6 +32,15 @@ export class RecordsService {
     );
   }
 
+  private async validateMbid(mbid: string): Promise<boolean> {
+    try {
+      const trackList = await this.musicBrainzService.getAlbumDetails(mbid);
+      return Array.isArray(trackList) && trackList.length > 0;
+    } catch (error) {
+      return false;
+    }
+  }
+
   async createRecord(
     createRecordDto: CreateRecordRequestDTO,
   ): Promise<ApiResponse<Record>> {
@@ -50,6 +59,14 @@ export class RecordsService {
       }
       const recordData = { ...createRecordDto };
       if (createRecordDto.mbid) {
+        const isValidMbid = await this.validateMbid(createRecordDto.mbid);
+        if (!isValidMbid) {
+          return ApiResponse.error(
+            MESSAGES.ERROR.RECORDS.MBID_NOT_FOUND(createRecordDto.mbid),
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
         try {
           const trackList = await this.musicBrainzService.getAlbumDetails(
             createRecordDto.mbid,
@@ -65,13 +82,10 @@ export class RecordsService {
           );
         }
       }
-
       const newRecord = await this.recordModel.create(recordData);
-
       if (!newRecord) {
         return ApiResponse.error(MESSAGES.ERROR.RECORDS.CREATE_ERROR);
       }
-
       return ApiResponse.created(newRecord, MESSAGES.SUCCESS.RECORDS.CREATED);
     } catch (error) {
       return ApiResponse.error(
@@ -89,9 +103,10 @@ export class RecordsService {
     try {
       const record = await this.recordModel.findById(id);
       if (!record) {
-        return ApiResponse.notFound(`Record with ID ${id} not found`);
+        return ApiResponse.notFound(
+          MESSAGES.ERROR.RECORDS.RECORD_NOT_FOUND(id),
+        );
       }
-
       if (updateRecordDto.mbid && updateRecordDto.mbid !== record.mbid) {
         try {
           const trackList = await this.musicBrainzService.getAlbumDetails(
@@ -198,14 +213,12 @@ export class RecordsService {
           .exec(),
       ]);
 
-      // Create paginated response
       const paginatedResponse = new PaginatedResponse<Record>(
         records,
         total,
         page,
         limit,
       );
-
       return ApiResponse.success(
         paginatedResponse,
         MESSAGES.SUCCESS.RECORDS.LIST_RETRIEVED,
@@ -233,9 +246,10 @@ export class RecordsService {
     try {
       const record = await this.recordModel.findById(id).lean().exec();
       if (!record) {
-        return ApiResponse.notFound(`Record with ID ${id} not found`);
+        return ApiResponse.notFound(
+          MESSAGES.ERROR.RECORDS.RECORD_NOT_FOUND(id),
+        );
       }
-
       return ApiResponse.success(record, MESSAGES.SUCCESS.RECORDS.RETRIEVED);
     } catch (error) {
       return ApiResponse.error(
@@ -250,9 +264,10 @@ export class RecordsService {
     try {
       const result = await this.recordModel.findByIdAndDelete(id).exec();
       if (!result) {
-        return ApiResponse.notFound(`Record with ID ${id} not found`);
+        return ApiResponse.notFound(
+          MESSAGES.ERROR.RECORDS.RECORD_NOT_FOUND(id),
+        );
       }
-
       return ApiResponse.success(result, MESSAGES.SUCCESS.RECORDS.DELETED);
     } catch (error) {
       return ApiResponse.error(

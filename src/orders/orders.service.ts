@@ -35,32 +35,23 @@ export class OrdersService {
     createOrderDto: CreateOrderRequestDTO,
   ): Promise<ApiResponse<Order>> {
     try {
-      // Find the record
       const record = await this.recordModel.findById(createOrderDto.recordId);
       if (!record) {
         return ApiResponse.notFound(
-          `Record with ID ${createOrderDto.recordId} not found`,
+          MESSAGES.ERROR.RECORDS.RECORD_NOT_FOUND(createOrderDto.recordId),
         );
       }
-
-      // Check if there's enough quantity in stock
       if (record.qty < createOrderDto.quantity) {
         return ApiResponse.error(
           `${MESSAGES.ERROR.ORDERS.INSUFFICIENT_STOCK}: ${createOrderDto.quantity}, Available: ${record.qty}`,
           HttpStatus.BAD_REQUEST,
         );
       }
-
-      // Calculate total price
       const totalPrice = record.price * createOrderDto.quantity;
-
-      // Create the order
       const newOrder = await this.orderModel.create({
         ...createOrderDto,
         totalPrice,
       });
-
-      // Update record quantity
       record.qty -= createOrderDto.quantity;
       await record.save();
 
@@ -91,15 +82,12 @@ export class OrdersService {
           .lean()
           .exec(),
       ]);
-
-      // Create paginated response
       const paginatedResponse = new PaginatedResponse<Order>(
         orders,
         total,
         page,
         limit,
       );
-
       return ApiResponse.success(
         paginatedResponse,
         MESSAGES.SUCCESS.ORDERS.LIST_RETRIEVED,
@@ -122,9 +110,8 @@ export class OrdersService {
         .exec();
 
       if (!order) {
-        return ApiResponse.notFound(`Order with ID ${id} not found`);
+        return ApiResponse.notFound(MESSAGES.ERROR.ORDERS.ORDER_NOT_FOUND(id));
       }
-
       return ApiResponse.success(order, MESSAGES.SUCCESS.ORDERS.RETRIEVED);
     } catch (error) {
       return ApiResponse.error(
@@ -142,10 +129,8 @@ export class OrdersService {
     try {
       const order = await this.orderModel.findById(id);
       if (!order) {
-        return ApiResponse.notFound(`Order with ID ${id} not found`);
+        return ApiResponse.notFound(MESSAGES.ERROR.ORDERS.ORDER_NOT_FOUND(id));
       }
-
-      // If quantity is being updated, check stock and adjust record quantity
       if (
         updateOrderDto.quantity &&
         updateOrderDto.quantity !== order.quantity
@@ -175,11 +160,8 @@ export class OrdersService {
         // Update total price
         updateOrderDto.totalPrice = record.price * updateOrderDto.quantity;
       }
-
-      // Update the order
       Object.assign(order, updateOrderDto);
       const updated = await order.save();
-
       return ApiResponse.success(updated, MESSAGES.SUCCESS.ORDERS.UPDATED);
     } catch (error) {
       return ApiResponse.error(
@@ -194,19 +176,15 @@ export class OrdersService {
     try {
       const order = await this.orderModel.findById(id);
       if (!order) {
-        return ApiResponse.notFound(`Order with ID ${id} not found`);
+        return ApiResponse.notFound(MESSAGES.ERROR.ORDERS.ORDER_NOT_FOUND(id));
       }
-
       // If the order is being deleted, return the quantity to the record
       const record = await this.recordModel.findById(order.recordId);
       if (record) {
         record.qty += order.quantity;
         await record.save();
       }
-
-      // Delete the order
       await this.orderModel.findByIdAndDelete(id);
-
       return ApiResponse.success(null, MESSAGES.SUCCESS.ORDERS.DELETED);
     } catch (error) {
       return ApiResponse.error(

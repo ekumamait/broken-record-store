@@ -9,15 +9,19 @@ import {
   ValidateNested,
 } from "class-validator";
 import { RecordFormat, RecordCategory } from "../../common/enums/record.enum";
+import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 
 class TrackDto {
+  @ApiProperty()
   @IsString()
   title: string;
 
+  @ApiProperty()
   @IsString()
   duration: string;
 
+  @ApiProperty()
   @IsInt()
   @Min(1)
   @Type(() => Number)
@@ -25,14 +29,17 @@ class TrackDto {
 }
 
 export class UpdateRecordRequestDTO {
+  @ApiProperty()
   @IsOptional()
   @IsString()
   artist?: string;
 
+  @ApiProperty()
   @IsOptional()
   @IsString()
   album?: string;
 
+  @ApiProperty()
   @IsOptional()
   @IsNumber()
   @Min(0.01)
@@ -40,6 +47,7 @@ export class UpdateRecordRequestDTO {
   @Type(() => Number)
   price?: number;
 
+  @ApiProperty()
   @IsNumber()
   @Min(0)
   @Max(100)
@@ -47,18 +55,22 @@ export class UpdateRecordRequestDTO {
   @Type(() => Number)
   qty?: number;
 
+  @ApiProperty()
   @IsEnum(RecordFormat)
   @IsOptional()
   format?: RecordFormat;
 
+  @ApiProperty()
   @IsEnum(RecordCategory)
   @IsOptional()
   category?: RecordCategory;
 
+  @ApiProperty()
   @IsOptional()
   @IsString()
   mbid?: string;
 
+  @ApiProperty()
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => TrackDto)

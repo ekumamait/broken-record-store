@@ -38,11 +38,8 @@ async function bootstrap() {
       return next(err);
     }
     res.status(err.status || 500).json({
-      statusCode: err.status || 500,
+      status: err.status || 500,
       message: err.message || MESSAGES.ERROR.INTERNAL_SERVER,
-      error: err.name,
-      timestamp: new Date().toISOString(),
-      path: _req.url,
     });
   });
 

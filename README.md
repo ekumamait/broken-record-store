@@ -9,7 +9,7 @@
 - [x] **AVAILABLE ROUTES**
 - [x] **REQUEST DATA**
 - [x] **TESTS**
-- [x] **PROJECT DEMO**
+- [ ] **PROJECT DEMO**
 - [ ] **TODOS**
 
 ---
@@ -171,12 +171,13 @@ Here’s an example of data to create an order for a record:
 ###### PROJECT DEMO
 
 Here is an example link to the deployed api:
-**http://localhost:3000/routes**
+
+**http://localhost:3000/swagger**
 
 ---
 
 ###### TODOS
 
-1: Use caching mechanisms to store and quickly retrieve results for frequently searched terms.
+1: Implement admin panel UI
 
-2: Enhance Search Flexibility by introducing fuzzy search
+2: Deploy api to GCP

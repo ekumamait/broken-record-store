@@ -2,11 +2,12 @@ import { Injectable } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
 import { firstValueFrom } from "rxjs";
 import * as xml2js from "xml2js";
+import { AppConfig } from "../app.config";
 
 @Injectable()
 export class MusicBrainzService {
-  private readonly baseUrl = process.env.MUSIC_BRAINZ_URL;
-  private readonly userAgent = process.env.MUSIC_BRAINZ_USER_AGENT;
+  private readonly baseUrl = AppConfig.music_brainz_url;
+  private readonly userAgent = AppConfig.music_brainz_user_agent;
 
   constructor(private readonly httpService: HttpService) {}
 

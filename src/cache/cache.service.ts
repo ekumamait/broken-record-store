@@ -19,25 +19,27 @@ export class CacheService {
   }
 
   async reset(): Promise<void> {
-    const store = this.cacheManager.stores as any;
-    if (store && store.client && typeof store.client.flushAll === "function") {
-      await store.client.flushAll();
-    } else {
-      console.warn("Unable to reset cache: Redis client not accessible");
+    try {
+      const store = (this.cacheManager as any).stores[0];
+      if (store?.client?.flushAll) {
+        await store.client.flushAll();
+      }
+    } catch (error) {
+      throw error;
     }
   }
 
   async invalidateByPattern(pattern: string): Promise<void> {
-    const store = this.cacheManager.stores as any;
-    if (store && store.client) {
-      const keys = await store.client.keys(pattern);
-      if (keys && keys.length > 0) {
-        await store.client.del(keys);
+    try {
+      const store = (this.cacheManager as any).stores[0];
+      if (store?.client?.keys) {
+        const keys = await store.client.keys(pattern);
+        if (Array.isArray(keys) && keys.length > 0) {
+          await Promise.all(keys.map((key) => this.cacheManager.del(key)));
+        }
       }
-    } else {
-      console.warn(
-        `Unable to invalidate cache by pattern '${pattern}': Redis client not accessible`,
-      );
+    } catch (error) {
+      throw error;
     }
   }
 

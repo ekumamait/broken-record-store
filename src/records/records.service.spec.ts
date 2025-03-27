@@ -67,7 +67,7 @@ describe("RecordsService", () => {
     jest.spyOn(musicBrainzService, "getAlbumDetails").mockResolvedValue([]);
 
     const response = await service.createRecord(createRecordDto);
-    expect(response.statusCode).toBe(HttpStatus.CREATED);
+    expect(response.status).toBe(HttpStatus.CREATED);
     expect(response.data._id).toBe("67e3e30a810d696976b8f05f");
     expect(recordModel.create).toHaveBeenCalledWith(createRecordDto);
   });
@@ -89,7 +89,7 @@ describe("RecordsService", () => {
     jest.spyOn(recordModel, "findOne").mockResolvedValue(existingRecord);
 
     const response = await service.createRecord(createRecordDto);
-    expect(response.statusCode).toBe(HttpStatus.CONFLICT);
+    expect(response.status).toBe(HttpStatus.CONFLICT);
     expect(response.message).toBe(
       "Record already exists with this artist, album, and format combination",
     );
@@ -114,7 +114,7 @@ describe("RecordsService", () => {
     jest.spyOn(recordModel, "findOne").mockResolvedValue(existingRecord);
 
     const response = await service.updateRecord("1", updateRecordDto);
-    expect(response.statusCode).toBe(HttpStatus.CONFLICT);
+    expect(response.status).toBe(HttpStatus.CONFLICT);
     expect(response.message).toBe(
       "Update would create a duplicate record with the same artist, album, and format",
     );

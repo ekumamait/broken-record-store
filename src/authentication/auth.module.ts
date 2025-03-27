@@ -6,6 +6,7 @@ import { User, UserSchema } from "../schemas/user.schema";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { JwtStrategy } from "./strategy/jwt.strategy";
+import { AppConfig } from "../app.config";
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { JwtStrategy } from "./strategy/jwt.strategy";
     PassportModule,
     JwtModule.registerAsync({
       useFactory: () => ({
-        secret: process.env.JWT_SECRET,
+        secret: AppConfig.jwt_secret,
         signOptions: { expiresIn: "24h" },
       }),
     }),

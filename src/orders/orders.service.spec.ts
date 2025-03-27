@@ -73,7 +73,7 @@ describe("OrdersService", () => {
 
       const result = await service.create(createOrderDto);
 
-      expect(result.statusCode).toBe(HttpStatus.CREATED);
+      expect(result.status).toBe(HttpStatus.CREATED);
       expect(result.data.totalPrice).toBe(40);
       expect(mockRecord.save).toHaveBeenCalled();
     });
@@ -83,7 +83,7 @@ describe("OrdersService", () => {
 
       const result = await service.create({ recordId: "invalid", quantity: 2 });
 
-      expect(result.statusCode).toBe(HttpStatus.NOT_FOUND);
+      expect(result.status).toBe(HttpStatus.NOT_FOUND);
     });
 
     it("should return error if not enough stock", async () => {
@@ -94,7 +94,7 @@ describe("OrdersService", () => {
         quantity: 2,
       });
 
-      expect(result.statusCode).toBe(HttpStatus.BAD_REQUEST);
+      expect(result.status).toBe(HttpStatus.BAD_REQUEST);
     });
   });
 
@@ -105,7 +105,7 @@ describe("OrdersService", () => {
 
       const result = await service.findAll(1, 10);
 
-      expect(result.statusCode).toBe(HttpStatus.OK);
+      expect(result.status).toBe(HttpStatus.OK);
       expect(result.data.items.length).toBe(1);
     });
   });
@@ -120,7 +120,7 @@ describe("OrdersService", () => {
 
       const result = await service.findOne("order1");
 
-      expect(result.statusCode).toBe(HttpStatus.OK);
+      expect(result.status).toBe(HttpStatus.OK);
       expect(result.data._id).toBe("order1");
     });
 
@@ -133,7 +133,7 @@ describe("OrdersService", () => {
 
       const result = await service.findOne("invalid");
 
-      expect(result.statusCode).toBe(HttpStatus.NOT_FOUND);
+      expect(result.status).toBe(HttpStatus.NOT_FOUND);
     });
   });
 
@@ -157,7 +157,7 @@ describe("OrdersService", () => {
       const updateDto: UpdateOrderDto = { quantity: 3 };
       const result = await service.update("order1", updateDto);
 
-      expect(result.statusCode).toBe(HttpStatus.OK);
+      expect(result.status).toBe(HttpStatus.OK);
       expect(mockOrder.save).toHaveBeenCalled();
     });
 
@@ -166,7 +166,7 @@ describe("OrdersService", () => {
 
       const result = await service.update("invalid", { quantity: 2 });
 
-      expect(result.statusCode).toBe(HttpStatus.NOT_FOUND);
+      expect(result.status).toBe(HttpStatus.NOT_FOUND);
     });
   });
 
@@ -180,7 +180,7 @@ describe("OrdersService", () => {
 
       const result = await service.remove("order1");
 
-      expect(result.statusCode).toBe(HttpStatus.OK);
+      expect(result.status).toBe(HttpStatus.OK);
       expect(mockRecord.save).toHaveBeenCalled();
     });
 
@@ -189,7 +189,7 @@ describe("OrdersService", () => {
 
       const result = await service.remove("invalid");
 
-      expect(result.statusCode).toBe(HttpStatus.NOT_FOUND);
+      expect(result.status).toBe(HttpStatus.NOT_FOUND);
     });
   });
 });

@@ -4,6 +4,7 @@ import { AppConfig } from "./app.config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ValidationPipe, VersioningType } from "@nestjs/common";
 import { MESSAGES } from "./common/constants/messages.constant";
+import { NotFoundExceptionFilter } from "./common/utils/exception-filter.util";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,6 +19,8 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
   });
+
+  app.useGlobalFilters(new NotFoundExceptionFilter());
 
   // Swagger configuration
   const config = new DocumentBuilder()

@@ -10,6 +10,7 @@ import { PaginatedResponse } from "../common/utils/paginated-response.util";
 import { CacheService } from "../cache/cache.service";
 import { MusicBrainzService } from "../musicbrainz/musicbrainz.service";
 import { MESSAGES } from "../common/constants/messages.constant";
+import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
 
 @Injectable()
 export class RecordsService {
@@ -21,13 +22,13 @@ export class RecordsService {
 
   async invalidateRecordsCache(): Promise<void> {
     await this.cacheService.invalidateByPattern(
-      MESSAGES.CACHE.KEYS.RECORDS_LIST,
+      CACHE_CONSTANTS.KEYS.RECORDS_LIST,
     );
   }
 
   async invalidateRecordCache(id: string): Promise<void> {
     await this.cacheService.invalidateByPattern(
-      `${MESSAGES.CACHE.KEYS.RECORDS_DETAIL}:*${id}*`,
+      `${CACHE_CONSTANTS.KEYS.RECORDS_DETAIL}:*${id}*`,
     );
   }
 

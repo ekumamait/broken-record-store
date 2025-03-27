@@ -59,12 +59,4 @@ export const MESSAGES = {
       INACTIVE_USER: "User account is inactive",
     },
   },
-  CACHE: {
-    KEYS: {
-      RECORDS_LIST: "records:list",
-      RECORDS_DETAIL: "records:detail",
-      ORDERS_LIST: "orders:list",
-      ORDERS_DETAIL: "orders:detail",
-    },
-  },
 };

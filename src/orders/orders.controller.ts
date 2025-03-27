@@ -16,7 +16,7 @@ import { ApiResponse } from "../common/utils/api-response.util";
 import { Order } from "../schemas/order.schema";
 import { UseCache } from "../cache/cache.decorator";
 import { PaginatedResponse } from "../common/utils/paginated-response.util";
-import { MESSAGES } from "../common/constants/messages.constant";
+import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
 
 @ApiTags("Orders")
 @Controller({ path: "orders", version: "1" })
@@ -33,7 +33,7 @@ export class OrdersController {
   }
 
   @Get()
-  @UseCache({ keyPrefix: MESSAGES.CACHE.KEYS.ORDERS_LIST, ttl: 300 })
+  @UseCache({ keyPrefix: CACHE_CONSTANTS.KEYS.ORDERS_LIST, ttl: 300 })
   async findAll(
     @Query("page") page = 1,
     @Query("limit") limit = 10,
@@ -42,7 +42,7 @@ export class OrdersController {
   }
 
   @Get(":id")
-  @UseCache({ keyPrefix: MESSAGES.CACHE.KEYS.ORDERS_DETAIL, ttl: 300 })
+  @UseCache({ keyPrefix: CACHE_CONSTANTS.KEYS.ORDERS_DETAIL, ttl: 300 })
   async findOne(@Param("id") id: string): Promise<ApiResponse<Order>> {
     return await this.ordersService.findOne(id);
   }

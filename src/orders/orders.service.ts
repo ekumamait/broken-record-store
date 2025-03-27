@@ -9,6 +9,7 @@ import { ApiResponse } from "../common/utils/api-response.util";
 import { CacheService } from "../cache/cache.service";
 import { PaginatedResponse } from "../common/utils/paginated-response.util";
 import { MESSAGES } from "../common/constants/messages.constant";
+import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
 
 @Injectable()
 export class OrdersService {
@@ -20,13 +21,13 @@ export class OrdersService {
 
   async invalidateOrdersCache(): Promise<void> {
     await this.cacheService.invalidateByPattern(
-      MESSAGES.CACHE.KEYS.ORDERS_LIST,
+      CACHE_CONSTANTS.KEYS.ORDERS_LIST,
     );
   }
 
   async invalidateOrderCache(id: string): Promise<void> {
     await this.cacheService.invalidateByPattern(
-      `${MESSAGES.CACHE.KEYS.ORDERS_DETAIL}:*${id}*`,
+      `${CACHE_CONSTANTS.KEYS.ORDERS_DETAIL}:*${id}*`,
     );
   }
 

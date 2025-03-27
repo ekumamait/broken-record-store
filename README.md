@@ -1,3 +1,5 @@
+![Codecov](https://codecov.io/gh/ekumamit/broken-record-store/branch/dev/graph/badge.svg)![Build Status](https://github.com/ekumamit/broken-record-store/actions/workflows/ci.yml/badge.svg)
+
 # Record Store Challenge API
 ## Description
 

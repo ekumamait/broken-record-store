@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from '../schemas/user.schema';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from './strategy/jwt.strategy';
+import { Module } from "@nestjs/common";
+import { AuthService } from "./auth.service";
+import { AuthController } from "./auth.controller";
+import { MongooseModule } from "@nestjs/mongoose";
+import { User, UserSchema } from "../schemas/user.schema";
+import { JwtModule } from "@nestjs/jwt";
+import { PassportModule } from "@nestjs/passport";
+import { JwtStrategy } from "./strategy/jwt.strategy";
 
 @Module({
   imports: [
@@ -14,7 +14,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
     JwtModule.registerAsync({
       useFactory: () => ({
         secret: process.env.JWT_SECRET,
-        signOptions: { expiresIn: '24h' },
+        signOptions: { expiresIn: "24h" },
       }),
     }),
   ],

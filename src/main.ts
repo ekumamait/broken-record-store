@@ -1,8 +1,9 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { AppConfig } from './app.config';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'; // Import Swagger
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { AppConfig } from "./app.config";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { ValidationPipe, VersioningType } from "@nestjs/common";
+import { MESSAGES } from "./common/constants/messages.constant";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,30 +21,27 @@ async function bootstrap() {
 
   // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle('Record API')
-    .setDescription('The record management API')
-    .setVersion('1.0')
+    .setTitle("Record API")
+    .setDescription("The record management API")
+    .setVersion("1.0")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('swagger', app, document);
+  SwaggerModule.setup("swagger", app, document);
 
-  // Error handling middleware
-  app.use((err, _req, res, _next) => {
-    res.status(500).json({
-      error: 'INTERNAL_SERVER_ERROR',
-      message: err?.message,
-      success: false,
+  // Global error handling middleware
+  app.use((err, _req, res, next) => {
+    if (res.headersSent) {
+      return next(err);
+    }
+    res.status(err.status || 500).json({
+      statusCode: err.status || 500,
+      message: err.message || MESSAGES.ERROR.INTERNAL_SERVER,
+      error: err.name,
+      timestamp: new Date().toISOString(),
+      path: _req.url,
     });
   });
-
-  // wrong route
-  // app.use((req, res) =>
-  //   res.status(405).send({
-  //     status: 405,
-  //     error: 'NO_URL_FOUND',
-  //   })
-  // );
 
   await app.listen(AppConfig.port);
 }

@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
-import { HttpModule } from '@nestjs/axios';
-import { MusicBrainzService } from './musicbrainz.service';
+import { Module } from "@nestjs/common";
+import { HttpModule } from "@nestjs/axios";
+import { MusicBrainzService } from "./musicbrainz.service";
 
 @Module({
   imports: [
@@ -12,4 +12,4 @@ import { MusicBrainzService } from './musicbrainz.service';
   providers: [MusicBrainzService],
   exports: [MusicBrainzService],
 })
-export class MusicBrainzModule {} 
+export class MusicBrainzModule {}

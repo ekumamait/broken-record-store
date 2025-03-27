@@ -3,14 +3,13 @@ import {
   IsNotEmpty,
   IsNumber,
   Min,
-  Max,
   IsInt,
   IsEnum,
   IsOptional,
   ValidateNested,
-} from 'class-validator';
-import { RecordFormat, RecordCategory } from '../../common/enums/record.enum';
-import { Type } from 'class-transformer';
+} from "class-validator";
+import { RecordFormat, RecordCategory } from "../../common/enums/record.enum";
+import { Type } from "class-transformer";
 
 class TrackDto {
   @IsString()

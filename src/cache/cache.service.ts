@@ -1,6 +1,6 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import { Injectable, Inject } from "@nestjs/common";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
 
 @Injectable()
 export class CacheService {
@@ -20,10 +20,10 @@ export class CacheService {
 
   async reset(): Promise<void> {
     const store = this.cacheManager.stores as any;
-    if (store && store.client && typeof store.client.flushAll === 'function') {
+    if (store && store.client && typeof store.client.flushAll === "function") {
       await store.client.flushAll();
     } else {
-      console.warn('Unable to reset cache: Redis client not accessible');
+      console.warn("Unable to reset cache: Redis client not accessible");
     }
   }
 
@@ -35,7 +35,9 @@ export class CacheService {
         await store.client.del(keys);
       }
     } else {
-      console.warn(`Unable to invalidate cache by pattern '${pattern}': Redis client not accessible`);
+      console.warn(
+        `Unable to invalidate cache by pattern '${pattern}': Redis client not accessible`,
+      );
     }
   }
 
@@ -48,7 +50,7 @@ export class CacheService {
         }
         return result;
       }, {});
-    
+
     return `${prefix}:${JSON.stringify(sortedParams)}`;
   }
-} 
+}

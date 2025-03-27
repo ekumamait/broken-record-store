@@ -1,48 +1,132 @@
-![Codecov](https://codecov.io/gh/ekumamait/broken-record-store/branch/dev/graph/badge.svg)![    Build Status](https://github.com/ekumamait/broken-record-store/.github/workflows/ci.yml/badge.svg?token=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)
+![Codecov](https://codecov.io/gh/ekumamait/broken-record-store/branch/dev/graph/badge.svg)[![CI](https://github.com/ekumamait/broken-record-store/actions/workflows/ci.yml/badge.svg)](https://github.com/ekumamait/broken-record-store/actions/workflows/ci.yml)
+
+##### TABLE OF CONTENT
+
+---
+
+- [x] **DESCRIPTION**
+- [x] **PROJECT SETUP**
+- [x] **AVAILABLE ROUTES**
+- [x] **REQUEST DATA**
+- [x] **TESTS**
+- [x] **PROJECT DEMO**
+- [ ] **TODOS**
+
+---
+
+###### :page_facing_up: Description
+
+Welcome to the Broken Record Store API—a modern, feature-rich API for managing a record store's inventory and orders. This application is built with NestJS and provides a robust set of features including:
+
+#### Core Features
+
+- **Record Management**:
+  - CRUD operations for vinyl records, CDs, and other music formats
+  - MusicBrainz integration for fetching detailed album information
+  - Advanced filtering and search capabilities
+  - Automatic track listing import from MusicBrainz
+
+- **Order Processing**:
+  - Create and manage customer orders
+  - Real-time inventory tracking
+  - Order history and status management
+
+- **Authentication & Authorization**:
+  - JWT-based authentication
+  - Role-based access control (Admin/Public)
+  - Secure endpoints with guard protection
+
+#### Technical Features
+
+- **Caching**:
+  - Redis-based caching system
+  - Automatic cache invalidation
+  - Configurable TTL for different resources
+
+- **Database**:
+  - MongoDB integration with Mongoose
+  - Optimized queries with indexing
+  - Data validation using DTOs
+
+- **API Features**:
+  - API versioning
+  - Swagger documentation
+  - Error handling with custom filters
+  - Request validation
+  - Rate limiting
+
+#### Performance Optimizations
+
+- Pagination for large datasets
+- Query optimization with MongoDB indexes
+- Caching for frequently accessed data
+- Efficient error handling and logging
+
+The API follows REST principles and uses modern TypeScript features while maintaining clean architecture patterns and SOLID principles.
+
+---
+
+###### PROJECT SETUP
 
 
-# Record Store Challenge API
-## Description
+1. Clone the Repository
 
-This is a **NestJS** application starter with MongoDB integration. If necessary, it provides a script to boot a Mongo emulator for Docker. This setup includes end-to-end tests, unit tests, test coverage, linting, and database setup with data from `data.json`.
+   `https://github.com/ekumamait/broken-record-store.git`
 
-## Installation
+2. Navigate to the application directory
 
-### Install dependencies:
+   `cd broken-record-store`
 
-```bash
-$ npm install
-````
+3. Create a `.env` file in the root of the project use the content of _.env.example_ as a guide
 
-### Docker for MongoDB Emulator
-To use the MongoDB Emulator, you can start it using Docker:
+   `cp .env.example .env`
+
+4. Install all dependencies
+
+   `npm install`
+
+5. Run Docker for MongoDB Emulator
+
+   `npm run mongo:start`
+
+6. Run MongoDB Data Setup
+
+   `npm run setup:db`
+
+7. Start the application in watch mode
+
+   `npm run start:dev`
+
+8. Start the application in production mode
+
+   `npm run start:prod`
+
+---
+
+###### AVAILABLE ROUTES;
+
+| EndPoint | Methods | Functionality                   | Access |
+| -------- | ------- | ------------------------------- | ------- |
+| records  | POST     | `create a new record with or without mbid` | ADMIN |
+| records/:id  | PUT     | `update record details` | ADMIN |
+| records  | GET     | `search for records in our catalog` | PUBLIC |
+| records:id  | GET     | `fetch a single record from our catalog`| PUBLIC |
+| records:id  | DELETE     | `delete a record from the catalog` |ADMIN |
+| orders  | POST     | `create orders for records` | PUBLIC |
+| orders/:id  | PATCH     | `update your order for a record` | PUBLIC |
+| orders  | GET     | `fetch all orders for records` | PUBLIC |
+| orders:id  | GET     | `fetch a single order for a record`| PUBLIC |
+| orders:id  | DELETE     | `delete an order for a record` |PUBLIC |
+
+---
+
+##### Record Data Example
+
+Here’s an example of data to create a record:
+
 ```
-npm run mongo:start
-```
-This will start a MongoDB instance running on your local machine. You can customize the settings in the Docker setup by modifying the docker-compose-mongo.yml if necessary. In the current configuration, you will have a MongoDB container running, which is accessible at localhost:27017.
-This mongo url will be necessary on the .env file, with example as follows:
 
-```
-MONGO_URL=mongodb://localhost:27017/records
-```
-This will point your application to a local MongoDB instance.
-
-### MongoDB Data Setup
-The data.json file contains example records to seed your database. The setup script will import the records from this file into MongoDB.
-
-To set up the database with the example records:
-
-```
-npm run setup:db
-```
-This will prompt the user to cleanup (Y/N) existing collection before importing data.json
-
-
-#### data.json Example
-Here’s an example of the data.json file that contains records:
-```
-[
-    {
+{
         "artist": "Foo Fighters",
         "album": "Foo Fighers",
         "price": 8,
@@ -50,59 +134,49 @@ Here’s an example of the data.json file that contains records:
         "format": "CD",
         "category": "Rock",
         "mbid": "d6591261-daaa-4bb2-81b6-544e499da727"
-  },
-  {
-        "artist": "The Cure",
-        "album": "Disintegration",
-        "price": 23,
-        "qty": 1,
-        "format": "Vinyl",
-        "category": "Alternative",
-        "mbid": "11af85e2-c272-4c59-a902-47f75141dc97"
-  },
-]
-```
-
-### Running the App
-#### Development Mode
-To run the application in development mode (with hot reloading):
+}
 
 ```
-npm run start:dev
-```
-#### Production Mode
-To build and run the app in production mode:
+
+##### Order Data Example
+
+Here’s an example of data to create an order for a record:
 
 ```
-npm run start:prod
+{
+        "recordId": "67e3e30a810d696976b8f062",
+        "quantity": 10,
+}
 ```
+---
 
-### Tests
-#### Run Unit Tests
-To run unit tests:
+###### :microscope: TESTS
 
-```
-npm run test
-```
-To run unit tests with code coverage:
+- [x] Unit Tests
 
-```
-npm run test:cov
-```
-This will show you how much of your code is covered by the unit tests.
-#### Run End-to-End Tests
-To run end-to-end tests:
-```
-npm run test:e2e
-```
-Run Tests with Coverage
+- command to run unit tests:
+  `npm run test`
+
+- command to run tests with coverage:
+  `npm run test:cov`
+
+- [ ] End-to-end Tests
+
+- command to run e2e tests with coverage:
+  `npm run test:e2e`
+
+---
 
 
-Run Linting
-To check if your code passes ESLint checks:
+###### PROJECT DEMO;
 
-```
-npm run lint
-```
-This command will show you any linting issues with your code.
+Here is an example link to the deployed api:
+**http://localhost:3000/v1/records?q=ArticMonkeys**
 
+---
+
+###### TODOS;
+
+1: Use caching mechanisms to store and quickly retrieve results for frequently searched terms.
+
+2: Enhance Search Flexibility by introducing fuzzy search

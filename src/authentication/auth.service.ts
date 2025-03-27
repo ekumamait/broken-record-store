@@ -41,7 +41,7 @@ export class AuthService {
 
     const user = await this.userModel.findOne({ email });
     if (!user) {
-      throw new UnauthorizedException(MESSAGES.ERROR.AUTH.INVALID_CREDENTIALS);
+      throw new UnauthorizedException(MESSAGES.ERROR.AUTH.LOGIN_FAILED);
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);

@@ -68,7 +68,6 @@ The API follows REST principles and uses modern TypeScript features while mainta
 
 ###### PROJECT SETUP
 
-
 1. Clone the Repository
 
    `https://github.com/ekumamait/broken-record-store.git`
@@ -103,20 +102,22 @@ The API follows REST principles and uses modern TypeScript features while mainta
 
 ---
 
-###### AVAILABLE ROUTES;
+###### AVAILABLE ROUTES
 
 | EndPoint | Methods | Functionality                   | Access |
 | -------- | ------- | ------------------------------- | ------- |
+| register  | POST     | `create a new user who is instantly set as admin` | PUBLIC |
+| login  | POST     | `login to get access token to access admin routes` | PUBLIC |
 | records  | POST     | `create a new record with or without mbid` | ADMIN |
 | records/:id  | PUT     | `update record details` | ADMIN |
 | records  | GET     | `search for records in our catalog` | PUBLIC |
-| records:id  | GET     | `fetch a single record from our catalog`| PUBLIC |
-| records:id  | DELETE     | `delete a record from the catalog` |ADMIN |
+| records/:id  | GET     | `fetch a single record from our catalog`| PUBLIC |
+| records/:id  | DELETE     | `delete a record from the catalog` |ADMIN |
 | orders  | POST     | `create orders for records` | PUBLIC |
 | orders/:id  | PATCH     | `update your order for a record` | PUBLIC |
 | orders  | GET     | `fetch all orders for records` | PUBLIC |
-| orders:id  | GET     | `fetch a single order for a record`| PUBLIC |
-| orders:id  | DELETE     | `delete an order for a record` |PUBLIC |
+| orders/:id  | GET     | `fetch a single order for a record`| PUBLIC |
+| orders/:id  | DELETE     | `delete an order for a record` |PUBLIC |
 
 ---
 
@@ -167,15 +168,14 @@ Here’s an example of data to create an order for a record:
 
 ---
 
-
-###### PROJECT DEMO;
+###### PROJECT DEMO
 
 Here is an example link to the deployed api:
-**http://localhost:3000/v1/records?q=ArticMonkeys**
+**http://localhost:3000/routes**
 
 ---
 
-###### TODOS;
+###### TODOS
 
 1: Use caching mechanisms to store and quickly retrieve results for frequently searched terms.
 

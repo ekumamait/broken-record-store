@@ -1,5 +1,4 @@
-import { ApiResponse } from './api-response.util';
-import { HttpStatus } from '@nestjs/common';
+import { ApiResponse } from "./api-response.util";
 
 export class PaginatedResponse<T> {
   items: T[];
@@ -15,7 +14,7 @@ export class PaginatedResponse<T> {
     items: T[],
     totalItems: number,
     currentPage: number,
-    itemsPerPage: number
+    itemsPerPage: number,
   ) {
     this.items = items;
     this.meta = {
@@ -23,7 +22,7 @@ export class PaginatedResponse<T> {
       itemCount: items.length,
       itemsPerPage,
       totalPages: Math.ceil(totalItems / itemsPerPage),
-      currentPage
+      currentPage,
     };
   }
 
@@ -32,15 +31,15 @@ export class PaginatedResponse<T> {
     totalItems: number,
     currentPage: number,
     itemsPerPage: number,
-    message = 'Items retrieved successfully'
+    message = "Items retrieved successfully",
   ): ApiResponse<PaginatedResponse<T>> {
     const paginatedResponse = new PaginatedResponse<T>(
       items,
       totalItems,
       currentPage,
-      itemsPerPage
+      itemsPerPage,
     );
-    
+
     return ApiResponse.success(paginatedResponse, message);
   }
-} 
+}

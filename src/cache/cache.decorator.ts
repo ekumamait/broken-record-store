@@ -1,16 +1,10 @@
-import { SetMetadata, applyDecorators } from '@nestjs/common';
-
-export const CACHE_KEY_METADATA = 'cache_key_metadata';
-export const CACHE_TTL_METADATA = 'cache_ttl_metadata';
-
-export interface CacheOptions {
-  keyPrefix: string;
-  ttl?: number;
-}
+import { SetMetadata, applyDecorators } from "@nestjs/common";
+import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
+import { CacheOptions } from "../common/interfaces/cache.interface";
 
 export function UseCache(options: CacheOptions) {
   return applyDecorators(
-    SetMetadata(CACHE_KEY_METADATA, options.keyPrefix),
-    SetMetadata(CACHE_TTL_METADATA, options.ttl || 300),
+    SetMetadata(CACHE_CONSTANTS.METADATA.KEY, options.keyPrefix),
+    SetMetadata(CACHE_CONSTANTS.METADATA.TTL, options.ttl || 300),
   );
-} 
+}

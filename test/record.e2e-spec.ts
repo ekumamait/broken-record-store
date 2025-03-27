@@ -1,10 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { RecordFormat, RecordCategory } from '../src/common/enums/record.enum';
+import { Test, TestingModule } from "@nestjs/testing";
+import { INestApplication } from "@nestjs/common";
+import * as request from "supertest";
+import { AppModule } from "../src/app.module";
+import { RecordFormat, RecordCategory } from "../src/common/enums/record.enum";
 
-describe('RecordController (e2e)', () => {
+describe("RecordController (e2e)", () => {
   let app: INestApplication;
   let recordId: string;
   let recordModel;
@@ -15,15 +15,15 @@ describe('RecordController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    recordModel = app.get('RecordModel');
+    recordModel = app.get("RecordModel");
     await app.init();
   });
 
   // Test to create a record
-  it('should create a new record', async () => {
+  it("should create a new record", async () => {
     const createRecordDto = {
-      artist: 'The Beatles',
-      album: 'Abbey Road',
+      artist: "The Beatles",
+      album: "Abbey Road",
       price: 25,
       qty: 10,
       format: RecordFormat.VINYL,
@@ -31,19 +31,19 @@ describe('RecordController (e2e)', () => {
     };
 
     const response = await request(app.getHttpServer())
-      .post('/records')
+      .post("/records")
       .send(createRecordDto)
       .expect(201);
 
     recordId = response.body._id;
-    expect(response.body).toHaveProperty('artist', 'The Beatles');
-    expect(response.body).toHaveProperty('album', 'Abbey Road');
+    expect(response.body).toHaveProperty("artist", "The Beatles");
+    expect(response.body).toHaveProperty("album", "Abbey Road");
   });
 
-  it('should create a new record and fetch it with filters', async () => {
+  it("should create a new record and fetch it with filters", async () => {
     const createRecordDto = {
-      artist: 'The Fake Band',
-      album: 'Fake Album',
+      artist: "The Fake Band",
+      album: "Fake Album",
       price: 25,
       qty: 10,
       format: RecordFormat.VINYL,
@@ -51,17 +51,17 @@ describe('RecordController (e2e)', () => {
     };
 
     const createResponse = await request(app.getHttpServer())
-      .post('/records')
+      .post("/records")
       .send(createRecordDto)
       .expect(201);
 
     recordId = createResponse.body._id;
 
     const response = await request(app.getHttpServer())
-      .get('/records?artist=The Fake Band')
+      .get("/records?artist=The Fake Band")
       .expect(200);
     expect(response.body.length).toBe(1);
-    expect(response.body[0]).toHaveProperty('artist', 'The Fake Band');
+    expect(response.body[0]).toHaveProperty("artist", "The Fake Band");
   });
   afterEach(async () => {
     if (recordId) {

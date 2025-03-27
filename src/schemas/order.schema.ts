@@ -1,9 +1,9 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document, Schema as MongooseSchema } from "mongoose";
 
 @Schema({ timestamps: true })
 export class Order extends Document {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Record', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: "Record", required: true })
   recordId: MongooseSchema.Types.ObjectId;
 
   @Prop({ required: true, min: 1 })
@@ -12,7 +12,7 @@ export class Order extends Document {
   @Prop({ required: true })
   totalPrice: number;
 
-  @Prop({ default: 'pending', enum: ['pending', 'completed', 'cancelled'] })
+  @Prop({ default: "pending", enum: ["pending", "completed", "cancelled"] })
   status: string;
 
   @Prop({ default: Date.now })
@@ -22,4 +22,4 @@ export class Order extends Document {
   lastModified: Date;
 }
 
-export const OrderSchema = SchemaFactory.createForClass(Order); 
+export const OrderSchema = SchemaFactory.createForClass(Order);

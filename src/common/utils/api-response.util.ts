@@ -1,4 +1,4 @@
-import { HttpStatus } from '@nestjs/common';
+import { HttpStatus } from "@nestjs/common";
 
 export class ApiResponse<T> {
   success: boolean;
@@ -23,7 +23,7 @@ export class ApiResponse<T> {
 
   static success<T>(
     data: T,
-    message = 'Operation successful',
+    message = "Operation successful",
     statusCode = HttpStatus.OK,
   ): ApiResponse<T> {
     return new ApiResponse<T>(true, statusCode, message, data);
@@ -31,13 +31,13 @@ export class ApiResponse<T> {
 
   static created<T>(
     data: T,
-    message = 'Resource created successfully',
+    message = "Resource created successfully",
   ): ApiResponse<T> {
     return new ApiResponse<T>(true, HttpStatus.CREATED, message, data);
   }
 
   static error<T>(
-    message = 'Operation failed',
+    message = "Operation failed",
     statusCode = HttpStatus.INTERNAL_SERVER_ERROR,
     error?: any,
   ): ApiResponse<T> {
@@ -45,7 +45,7 @@ export class ApiResponse<T> {
   }
 
   static notFound<T>(
-    message = 'Resource not found',
+    message = "Resource not found",
     error?: any,
   ): ApiResponse<T> {
     return new ApiResponse<T>(
@@ -57,10 +57,7 @@ export class ApiResponse<T> {
     );
   }
 
-  static badRequest<T>(
-    message = 'Bad request',
-    error?: any,
-  ): ApiResponse<T> {
+  static badRequest<T>(message = "Bad request", error?: any): ApiResponse<T> {
     return new ApiResponse<T>(
       false,
       HttpStatus.BAD_REQUEST,
@@ -69,4 +66,4 @@ export class ApiResponse<T> {
       error,
     );
   }
-} 
+}

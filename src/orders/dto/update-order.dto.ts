@@ -1,5 +1,5 @@
-import { IsOptional, IsNumber, Min, IsEnum, IsMongoId } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsNumber, Min, IsEnum, IsMongoId } from "class-validator";
+import { Type } from "class-transformer";
 
 export class UpdateOrderDto {
   @IsOptional()
@@ -18,6 +18,6 @@ export class UpdateOrderDto {
   totalPrice?: number;
 
   @IsOptional()
-  @IsEnum(['pending', 'completed', 'cancelled'])
+  @IsEnum(["pending", "completed", "cancelled"])
   status?: string;
 }

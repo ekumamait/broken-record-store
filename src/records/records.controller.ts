@@ -21,6 +21,7 @@ import { ApiResponse } from "../common/utils/api-response.util";
 import { FilterRecordDto } from "./dto/filter-record.dto";
 import { PaginatedResponse } from "../common/utils/paginated-response.util";
 import { UseCache } from "../cache/cache.decorator";
+import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
 
 @ApiTags("Records")
 @Controller({ path: "records", version: "1" })
@@ -50,7 +51,7 @@ export class RecordsController {
   }
 
   @Get()
-  @UseCache({ keyPrefix: "records:list", ttl: 300 })
+  @UseCache({ keyPrefix: CACHE_CONSTANTS.KEYS.RECORDS_LIST, ttl: 300 })
   async findAll(
     @Query() filterDto: FilterRecordDto,
   ): Promise<ApiResponse<PaginatedResponse<Record>>> {
@@ -58,7 +59,7 @@ export class RecordsController {
   }
 
   @Get(":id")
-  @UseCache({ keyPrefix: "records:detail", ttl: 600 })
+  @UseCache({ keyPrefix: CACHE_CONSTANTS.KEYS.RECORDS_DETAIL, ttl: 600 })
   async findOne(@Param("id") id: string): Promise<ApiResponse<Record>> {
     return await this.recordsService.findOneRecord(id);
   }

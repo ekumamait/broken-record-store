@@ -1,32 +1,40 @@
-import { Injectable, HttpStatus } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Record } from '../schemas/record.schema';
-import { CreateRecordRequestDTO } from './dto/create-record.dto';
-import { UpdateRecordRequestDTO } from './dto/update-record.dto';
-import { ApiResponse } from '../common/utils/api-response.util';
-import { FilterRecordDto } from './dto/filter-record.dto';
-import { PaginatedResponse } from '../common/utils/paginated-response.util';
-import { CacheService } from '../cache/cache.service';
-import { MusicBrainzService } from '../musicbrainz/musicbrainz.service';
+import { Injectable, HttpStatus } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { Record } from "../schemas/record.schema";
+import { CreateRecordRequestDTO } from "./dto/create-record.dto";
+import { UpdateRecordRequestDTO } from "./dto/update-record.dto";
+import { ApiResponse } from "../common/utils/api-response.util";
+import { FilterRecordDto } from "./dto/filter-record.dto";
+import { PaginatedResponse } from "../common/utils/paginated-response.util";
+import { CacheService } from "../cache/cache.service";
+import { MusicBrainzService } from "../musicbrainz/musicbrainz.service";
+import { MESSAGES } from "../common/constants/messages.constant";
+import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
 
 @Injectable()
 export class RecordsService {
   constructor(
-    @InjectModel('Record') private readonly recordModel: Model<Record>,
+    @InjectModel("Record") private readonly recordModel: Model<Record>,
     private readonly cacheService: CacheService,
     private readonly musicBrainzService: MusicBrainzService,
   ) {}
 
   async invalidateRecordsCache(): Promise<void> {
-    await this.cacheService.invalidateByPattern('records:list:*');
+    await this.cacheService.invalidateByPattern(
+      CACHE_CONSTANTS.KEYS.RECORDS_LIST,
+    );
   }
 
   async invalidateRecordCache(id: string): Promise<void> {
-    await this.cacheService.invalidateByPattern(`records:detail:*${id}*`);
+    await this.cacheService.invalidateByPattern(
+      `${CACHE_CONSTANTS.KEYS.RECORDS_DETAIL}:*${id}*`,
+    );
   }
 
-  async createRecord(createRecordDto: CreateRecordRequestDTO): Promise<ApiResponse<Record>> {
+  async createRecord(
+    createRecordDto: CreateRecordRequestDTO,
+  ): Promise<ApiResponse<Record>> {
     try {
       const existingRecord = await this.recordModel.findOne({
         artist: createRecordDto.artist,
@@ -36,36 +44,48 @@ export class RecordsService {
 
       if (existingRecord) {
         return ApiResponse.error(
-          'Record already exists with this artist, album, and format combination',
-          HttpStatus.CONFLICT
+          MESSAGES.ERROR.RECORDS.DUPLICATE,
+          HttpStatus.CONFLICT,
         );
       }
       const recordData = { ...createRecordDto };
       if (createRecordDto.mbid) {
         try {
-          const trackList = await this.musicBrainzService.getAlbumDetails(createRecordDto.mbid);
+          const trackList = await this.musicBrainzService.getAlbumDetails(
+            createRecordDto.mbid,
+          );
           if (trackList && trackList.length > 0) {
             recordData.trackList = trackList;
           }
         } catch (error) {
-          return ApiResponse.error(`Failed to fetch track list for MBID ${createRecordDto.mbid}: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR, error);
-
+          return ApiResponse.error(
+            `${MESSAGES.ERROR.RECORDS.MUSICBRAINZ_FETCH_ERROR} ${createRecordDto.mbid}: ${error.message}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            error,
+          );
         }
       }
 
       const newRecord = await this.recordModel.create(recordData);
 
       if (!newRecord) {
-        return ApiResponse.error('Failed to create record');
+        return ApiResponse.error(MESSAGES.ERROR.RECORDS.CREATE_ERROR);
       }
-      
-      return ApiResponse.created(newRecord, 'Record created successfully');
+
+      return ApiResponse.created(newRecord, MESSAGES.SUCCESS.RECORDS.CREATED);
     } catch (error) {
-      return ApiResponse.error('Error creating record', HttpStatus.INTERNAL_SERVER_ERROR, error);
+      return ApiResponse.error(
+        MESSAGES.ERROR.RECORDS.CREATE_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
     }
   }
 
-  async updateRecord(id: string, updateRecordDto: UpdateRecordRequestDTO): Promise<ApiResponse<Record>> {
+  async updateRecord(
+    id: string,
+    updateRecordDto: UpdateRecordRequestDTO,
+  ): Promise<ApiResponse<Record>> {
     try {
       const record = await this.recordModel.findById(id);
       if (!record) {
@@ -74,16 +94,24 @@ export class RecordsService {
 
       if (updateRecordDto.mbid && updateRecordDto.mbid !== record.mbid) {
         try {
-          const trackList = await this.musicBrainzService.getAlbumDetails(updateRecordDto.mbid);
+          const trackList = await this.musicBrainzService.getAlbumDetails(
+            updateRecordDto.mbid,
+          );
           if (trackList && trackList.length > 0) {
             updateRecordDto.trackList = trackList;
           }
         } catch (error) {
-          return ApiResponse.error(`Failed to fetch track list for MBID ${updateRecordDto.mbid}: ${error.message}`);
+          return ApiResponse.error(
+            `${MESSAGES.ERROR.RECORDS.MUSICBRAINZ_FETCH_ERROR} ${updateRecordDto.mbid}: ${error.message}`,
+          );
         }
       }
 
-      if (updateRecordDto.artist || updateRecordDto.album || updateRecordDto.format) {
+      if (
+        updateRecordDto.artist ||
+        updateRecordDto.album ||
+        updateRecordDto.format
+      ) {
         const potentialDuplicate = await this.recordModel.findOne({
           artist: updateRecordDto.artist || record.artist,
           album: updateRecordDto.album || record.album,
@@ -93,8 +121,8 @@ export class RecordsService {
 
         if (potentialDuplicate) {
           return ApiResponse.error(
-            'Update would create a duplicate record with the same artist, album, and format',
-            HttpStatus.CONFLICT
+            MESSAGES.ERROR.RECORDS.UPDATE_DUPLICATE,
+            HttpStatus.CONFLICT,
           );
         }
       }
@@ -103,24 +131,38 @@ export class RecordsService {
 
       const updated = await record.save();
       if (!updated) {
-        return ApiResponse.error('Failed to update record');
+        return ApiResponse.error(MESSAGES.ERROR.RECORDS.UPDATE_ERROR);
       }
-      
-      return ApiResponse.success(record, 'Record updated successfully');
+
+      return ApiResponse.success(record, MESSAGES.SUCCESS.RECORDS.UPDATED);
     } catch (error) {
-      return ApiResponse.error('Error updating record', HttpStatus.INTERNAL_SERVER_ERROR, error);
+      return ApiResponse.error(
+        MESSAGES.ERROR.RECORDS.UPDATE_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
     }
   }
 
   async findAllRecords(
-    filterDto: FilterRecordDto
+    filterDto: FilterRecordDto,
   ): Promise<ApiResponse<PaginatedResponse<Record>>> {
     try {
-      const { q, artist, album, format, category, page = 1, limit = 10, sortBy = 'artist', sortDirection = 'asc' } = filterDto;
-      
+      const {
+        q,
+        artist,
+        album,
+        format,
+        category,
+        page = 1,
+        limit = 10,
+        sortBy = "artist",
+        sortDirection = "asc",
+      } = filterDto;
+
       // Build the filter object
       const filter: any = {};
-      
+
       if (q) {
         // Using $text search if you have a text index set up
         if (await this.hasTextIndex()) {
@@ -128,22 +170,22 @@ export class RecordsService {
         } else {
           // Fallback to regex if no text index
           filter.$or = [
-            { artist: { $regex: q, $options: 'i' } },
-            { album: { $regex: q, $options: 'i' } },
-            { category: { $regex: q, $options: 'i' } }
+            { artist: { $regex: q, $options: "i" } },
+            { album: { $regex: q, $options: "i" } },
+            { category: { $regex: q, $options: "i" } },
           ];
         }
       }
-      
-      if (artist) filter.artist = { $regex: artist, $options: 'i' };
-      if (album) filter.album = { $regex: album, $options: 'i' };
+
+      if (artist) filter.artist = { $regex: artist, $options: "i" };
+      if (album) filter.album = { $regex: album, $options: "i" };
       if (format) filter.format = format;
       if (category) filter.category = category;
-      
+
       // Create sort object
       const sort: any = {};
-      sort[sortBy] = sortDirection === 'asc' ? 1 : -1;
-      
+      sort[sortBy] = sortDirection === "asc" ? 1 : -1;
+
       // Execute count query and find query in parallel
       const [total, records] = await Promise.all([
         this.recordModel.countDocuments(filter),
@@ -153,20 +195,27 @@ export class RecordsService {
           .skip((page - 1) * limit)
           .limit(limit)
           .lean()
-          .exec()
+          .exec(),
       ]);
-      
+
       // Create paginated response
       const paginatedResponse = new PaginatedResponse<Record>(
         records,
         total,
         page,
-        limit
+        limit,
       );
-      
-      return ApiResponse.success(paginatedResponse, 'Records retrieved successfully');
+
+      return ApiResponse.success(
+        paginatedResponse,
+        MESSAGES.SUCCESS.RECORDS.LIST_RETRIEVED,
+      );
     } catch (error) {
-      return ApiResponse.error('Error retrieving records', HttpStatus.INTERNAL_SERVER_ERROR, error);
+      return ApiResponse.error(
+        MESSAGES.ERROR.RECORDS.LIST_RETRIEVE_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
     }
   }
 
@@ -174,7 +223,7 @@ export class RecordsService {
   private async hasTextIndex(): Promise<boolean> {
     try {
       const indexes = await this.recordModel.collection.indexes();
-      return indexes.some(index => index.textIndexVersion);
+      return indexes.some((index) => index.textIndexVersion);
     } catch {
       return false;
     }
@@ -186,10 +235,14 @@ export class RecordsService {
       if (!record) {
         return ApiResponse.notFound(`Record with ID ${id} not found`);
       }
-      
-      return ApiResponse.success(record, 'Record retrieved successfully');
+
+      return ApiResponse.success(record, MESSAGES.SUCCESS.RECORDS.RETRIEVED);
     } catch (error) {
-      return ApiResponse.error('Error retrieving record', HttpStatus.INTERNAL_SERVER_ERROR, error);
+      return ApiResponse.error(
+        MESSAGES.ERROR.RECORDS.RETRIEVE_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
     }
   }
 
@@ -199,10 +252,14 @@ export class RecordsService {
       if (!result) {
         return ApiResponse.notFound(`Record with ID ${id} not found`);
       }
-      
-      return ApiResponse.success(result, 'Record deleted successfully');
+
+      return ApiResponse.success(result, MESSAGES.SUCCESS.RECORDS.DELETED);
     } catch (error) {
-      return ApiResponse.error('Error deleting record', HttpStatus.INTERNAL_SERVER_ERROR, error);
+      return ApiResponse.error(
+        MESSAGES.ERROR.RECORDS.DELETE_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
     }
   }
 }

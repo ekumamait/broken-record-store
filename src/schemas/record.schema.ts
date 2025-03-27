@@ -1,6 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { RecordFormat, RecordCategory } from '../common/enums/record.enum';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
+import { RecordFormat, RecordCategory } from "../common/enums/record.enum";
 
 @Schema({ timestamps: true })
 export class Record extends Document {
@@ -30,8 +30,11 @@ export class Record extends Document {
 
   @Prop({ required: false, index: true })
   mbid?: string;
-  
-  @Prop({ type: [{ title: String, duration: String, position: Number }], default: [] })
+
+  @Prop({
+    type: [{ title: String, duration: String, position: Number }],
+    default: [],
+  })
   trackList?: Array<{ title: string; duration: string; position: number }>;
 }
 
@@ -42,6 +45,6 @@ RecordSchema.index({ artist: 1, album: 1, format: 1 }, { unique: true });
 
 // Create a text index for efficient text search
 RecordSchema.index(
-  { artist: 'text', album: 'text', category: 'text' },
-  { weights: { artist: 3, album: 2, category: 1 }, name: 'text_search_index' }
+  { artist: "text", album: "text", category: "text" },
+  { weights: { artist: 3, album: 2, category: 1 }, name: "text_search_index" },
 );

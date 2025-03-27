@@ -1,43 +1,53 @@
-import { Injectable, HttpStatus } from '@nestjs/common';
-import { CreateOrderRequestDTO } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Record } from '../schemas/record.schema';
-import { Order } from '../schemas/order.schema';
-import { ApiResponse } from '../common/utils/api-response.util';
-import { CacheService } from '../cache/cache.service';
-import { PaginatedResponse } from '../common/utils/paginated-response.util';
+import { Injectable, HttpStatus } from "@nestjs/common";
+import { CreateOrderRequestDTO } from "./dto/create-order.dto";
+import { UpdateOrderDto } from "./dto/update-order.dto";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { Record } from "../schemas/record.schema";
+import { Order } from "../schemas/order.schema";
+import { ApiResponse } from "../common/utils/api-response.util";
+import { CacheService } from "../cache/cache.service";
+import { PaginatedResponse } from "../common/utils/paginated-response.util";
+import { MESSAGES } from "../common/constants/messages.constant";
+import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
 
 @Injectable()
 export class OrdersService {
   constructor(
-    @InjectModel('Record') private readonly recordModel: Model<Record>,
-    @InjectModel('Order') private readonly orderModel: Model<Order>,
+    @InjectModel("Record") private readonly recordModel: Model<Record>,
+    @InjectModel("Order") private readonly orderModel: Model<Order>,
     private readonly cacheService: CacheService,
   ) {}
 
   async invalidateOrdersCache(): Promise<void> {
-    await this.cacheService.invalidateByPattern('orders:list:*');
+    await this.cacheService.invalidateByPattern(
+      CACHE_CONSTANTS.KEYS.ORDERS_LIST,
+    );
   }
 
   async invalidateOrderCache(id: string): Promise<void> {
-    await this.cacheService.invalidateByPattern(`orders:detail:*${id}*`);
+    await this.cacheService.invalidateByPattern(
+      `${CACHE_CONSTANTS.KEYS.ORDERS_DETAIL}:*${id}*`,
+    );
   }
 
-  async create(createOrderDto: CreateOrderRequestDTO): Promise<ApiResponse<Order>> {
+  async create(
+    createOrderDto: CreateOrderRequestDTO,
+  ): Promise<ApiResponse<Order>> {
     try {
       // Find the record
       const record = await this.recordModel.findById(createOrderDto.recordId);
       if (!record) {
-        return ApiResponse.notFound(`Record with ID ${createOrderDto.recordId} not found`);
+        return ApiResponse.notFound(
+          `Record with ID ${createOrderDto.recordId} not found`,
+        );
       }
 
       // Check if there's enough quantity in stock
       if (record.qty < createOrderDto.quantity) {
         return ApiResponse.error(
-          `Not enough records in stock. Requested: ${createOrderDto.quantity}, Available: ${record.qty}`,
-          HttpStatus.BAD_REQUEST
+          `${MESSAGES.ERROR.ORDERS.INSUFFICIENT_STOCK}: ${createOrderDto.quantity}, Available: ${record.qty}`,
+          HttpStatus.BAD_REQUEST,
         );
       }
 
@@ -54,13 +64,20 @@ export class OrdersService {
       record.qty -= createOrderDto.quantity;
       await record.save();
 
-      return ApiResponse.created(newOrder, 'Order created successfully');
+      return ApiResponse.created(newOrder, MESSAGES.SUCCESS.ORDERS.CREATED);
     } catch (error) {
-      return ApiResponse.error('Error creating order', HttpStatus.INTERNAL_SERVER_ERROR, error);
+      return ApiResponse.error(
+        MESSAGES.ERROR.ORDERS.CREATE_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
     }
   }
 
-  async findAll(page = 1, limit = 10): Promise<ApiResponse<PaginatedResponse<Order>>> {
+  async findAll(
+    page = 1,
+    limit = 10,
+  ): Promise<ApiResponse<PaginatedResponse<Order>>> {
     try {
       // Execute count query and find query in parallel
       const [total, orders] = await Promise.all([
@@ -70,9 +87,9 @@ export class OrdersService {
           .sort({ created: -1 })
           .skip((page - 1) * limit)
           .limit(limit)
-          .populate('recordId', 'artist album format price')
+          .populate("recordId", "artist album format price")
           .lean()
-          .exec()
+          .exec(),
       ]);
 
       // Create paginated response
@@ -80,12 +97,19 @@ export class OrdersService {
         orders,
         total,
         page,
-        limit
+        limit,
       );
 
-      return ApiResponse.success(paginatedResponse, 'Orders retrieved successfully');
+      return ApiResponse.success(
+        paginatedResponse,
+        MESSAGES.SUCCESS.ORDERS.LIST_RETRIEVED,
+      );
     } catch (error) {
-      return ApiResponse.error('Error retrieving orders', HttpStatus.INTERNAL_SERVER_ERROR, error);
+      return ApiResponse.error(
+        MESSAGES.ERROR.ORDERS.LIST_RETRIEVE_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
     }
   }
 
@@ -93,7 +117,7 @@ export class OrdersService {
     try {
       const order = await this.orderModel
         .findById(id)
-        .populate('recordId', 'artist album format price')
+        .populate("recordId", "artist album format price")
         .lean()
         .exec();
 
@@ -101,13 +125,20 @@ export class OrdersService {
         return ApiResponse.notFound(`Order with ID ${id} not found`);
       }
 
-      return ApiResponse.success(order, 'Order retrieved successfully');
+      return ApiResponse.success(order, MESSAGES.SUCCESS.ORDERS.RETRIEVED);
     } catch (error) {
-      return ApiResponse.error('Error retrieving order', HttpStatus.INTERNAL_SERVER_ERROR, error);
+      return ApiResponse.error(
+        MESSAGES.ERROR.ORDERS.RETRIEVE_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
     }
   }
 
-  async update(id: string, updateOrderDto: UpdateOrderDto): Promise<ApiResponse<Order>> {
+  async update(
+    id: string,
+    updateOrderDto: UpdateOrderDto,
+  ): Promise<ApiResponse<Order>> {
     try {
       const order = await this.orderModel.findById(id);
       if (!order) {
@@ -115,10 +146,15 @@ export class OrdersService {
       }
 
       // If quantity is being updated, check stock and adjust record quantity
-      if (updateOrderDto.quantity && updateOrderDto.quantity !== order.quantity) {
+      if (
+        updateOrderDto.quantity &&
+        updateOrderDto.quantity !== order.quantity
+      ) {
         const record = await this.recordModel.findById(order.recordId);
         if (!record) {
-          return ApiResponse.notFound(`Record associated with this order not found`);
+          return ApiResponse.notFound(
+            MESSAGES.ERROR.RECORDS.ASSOCIATE_NOT_FOUND,
+          );
         }
 
         // Calculate the difference in quantity
@@ -127,8 +163,8 @@ export class OrdersService {
         // Check if there's enough stock for an increase
         if (quantityDifference > 0 && record.qty < quantityDifference) {
           return ApiResponse.error(
-            `Not enough records in stock. Additional needed: ${quantityDifference}, Available: ${record.qty}`,
-            HttpStatus.BAD_REQUEST
+            `${MESSAGES.ERROR.ORDERS.INSUFFICIENT_STOCK}: ${quantityDifference}, Available: ${record.qty}`,
+            HttpStatus.BAD_REQUEST,
           );
         }
 
@@ -144,9 +180,13 @@ export class OrdersService {
       Object.assign(order, updateOrderDto);
       const updated = await order.save();
 
-      return ApiResponse.success(updated, 'Order updated successfully');
+      return ApiResponse.success(updated, MESSAGES.SUCCESS.ORDERS.UPDATED);
     } catch (error) {
-      return ApiResponse.error('Error updating order', HttpStatus.INTERNAL_SERVER_ERROR, error);
+      return ApiResponse.error(
+        MESSAGES.ERROR.ORDERS.UPDATE_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
     }
   }
 
@@ -167,9 +207,13 @@ export class OrdersService {
       // Delete the order
       await this.orderModel.findByIdAndDelete(id);
 
-      return ApiResponse.success(null, 'Order deleted successfully');
+      return ApiResponse.success(null, MESSAGES.SUCCESS.ORDERS.DELETED);
     } catch (error) {
-      return ApiResponse.error('Error deleting order', HttpStatus.INTERNAL_SERVER_ERROR, error);
+      return ApiResponse.error(
+        MESSAGES.ERROR.ORDERS.DELETE_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
     }
   }
 }

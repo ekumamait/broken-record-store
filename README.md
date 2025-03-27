@@ -1,4 +1,4 @@
-![Codecov](https://codecov.io/gh/ekumamait/broken-record-store/branch/dev/graph/badge.svg)[![CI](https://github.com/ekumamait/broken-record-store/actions/workflows/ci.yml/badge.svg)](https://github.com/ekumamait/broken-record-store/actions/workflows/ci.yml)
+![Codecov](https://codecov.io/gh/ekumamait/broken-record-store/branch/dev/graph/badge.svg) [![CI](https://github.com/ekumamait/broken-record-store/actions/workflows/ci.yml/badge.svg)](https://github.com/ekumamait/broken-record-store/actions/workflows/ci.yml)
 
 ##### TABLE OF CONTENT
 

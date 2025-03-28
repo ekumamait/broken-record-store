@@ -22,7 +22,6 @@ async function bootstrap() {
 
   app.useGlobalFilters(new NotFoundExceptionFilter());
 
-  // Swagger configuration
   const config = new DocumentBuilder()
     .setTitle("Record API")
     .setDescription("The record management API")
@@ -32,7 +31,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("swagger", app, document);
 
-  // Global error handling middleware
   app.use((err, _req, res, next) => {
     if (res.headersSent) {
       return next(err);

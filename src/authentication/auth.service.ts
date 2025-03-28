@@ -1,14 +1,18 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { User } from "../schemas/user.schema";
-import { UserRole } from "src/common/enums/user.enum";
+import { UserRole } from "../common/enums/user.enum";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { ApiResponse } from "../common/utils/api-response.util";
-import { MESSAGES } from "src/common/constants/messages.constant";
+import { MESSAGES } from "../common/constants/messages.constant";
 
 @Injectable()
 export class AuthService {
@@ -22,7 +26,10 @@ export class AuthService {
 
     const existingUser = await this.userModel.findOne({ email });
     if (existingUser) {
-      return ApiResponse.error(MESSAGES.ERROR.AUTH.USER_EXISTS);
+      throw new BadRequestException({
+        status: 400,
+        message: MESSAGES.ERROR.AUTH.USER_EXISTS,
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -33,7 +40,7 @@ export class AuthService {
     });
 
     const token = this.generateToken(user);
-    return ApiResponse.success({ token });
+    return ApiResponse.success({ token }, MESSAGES.SUCCESS.AUTH.REGISTERED);
   }
 
   async login(loginDto: LoginDto): Promise<ApiResponse<any>> {
@@ -50,7 +57,7 @@ export class AuthService {
     }
 
     const token = this.generateToken(user);
-    return ApiResponse.success({ token });
+    return ApiResponse.success({ token }, MESSAGES.SUCCESS.AUTH.LOGGED_IN);
   }
 
   private generateToken(user: User): string {

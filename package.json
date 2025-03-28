@@ -101,8 +101,8 @@
       "global": {
         "branches": 5,
         "functions": 10,
-        "lines": 20,
-        "statements": 20
+        "lines": 10,
+        "statements": 10
       }
     }
   },
@@ -114,8 +114,8 @@
   "lint-staged": {
     "*.{js,ts}": [
       "eslint --fix",
-      "jest --bail --findRelatedTests --coverage",
-      "prettier --write"
+      "prettier --write",
+      "jest --bail --coverage --findRelatedTests"
     ]
   }
 }

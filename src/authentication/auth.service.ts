@@ -36,7 +36,7 @@ export class AuthService {
     const user = await this.userModel.create({
       ...registerDto,
       password: hashedPassword,
-      role: UserRole.ADMIN, // First user is admin
+      role: UserRole.ADMIN, // set First User as admin then remove this line
     });
 
     const token = this.generateToken(user);

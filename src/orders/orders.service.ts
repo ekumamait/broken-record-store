@@ -156,10 +156,8 @@ export class OrdersService {
           );
         }
 
-        // Calculate the difference in quantity
         const quantityDifference = updateOrderDto.quantity - order.quantity;
 
-        // Check if there's enough stock for an increase
         if (quantityDifference > 0 && record.qty < quantityDifference) {
           return ApiResponse.error(
             `${MESSAGES.ERROR.ORDERS.INSUFFICIENT_STOCK}: ${quantityDifference}, Available: ${record.qty}`,
@@ -167,11 +165,9 @@ export class OrdersService {
           );
         }
 
-        // Update record quantity
         record.qty -= quantityDifference;
         await record.save();
 
-        // Update total price
         updateOrderDto.totalPrice = record.price * updateOrderDto.quantity;
       }
       Object.assign(order, updateOrderDto);

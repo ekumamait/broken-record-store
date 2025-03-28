@@ -87,7 +87,6 @@ describe("AuthService", () => {
       userModel.exists.mockResolvedValue(existingUser);
       userModel.findOne.mockResolvedValue(existingUser);
 
-      // Act & Assert
       await expect(service.register(registerDto)).rejects.toThrow(
         expect.objectContaining({
           status: 400,

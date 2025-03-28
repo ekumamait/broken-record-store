@@ -40,10 +40,8 @@ export class Record extends Document {
 
 export const RecordSchema = SchemaFactory.createForClass(Record);
 
-// Create a compound index for the unique identifier (artist + album + format)
 RecordSchema.index({ artist: 1, album: 1, format: 1 }, { unique: true });
 
-// Create a text index for efficient text search
 RecordSchema.index(
   { artist: "text", album: "text", category: "text" },
   { weights: { artist: 3, album: 2, category: 1 }, name: "text_search_index" },

@@ -54,7 +54,6 @@ export class OrdersService {
         ...createOrderDto,
         totalPrice,
       });
-      record.qty -= createOrderDto.quantity;
       await record.save();
 
       return ApiResponse.created(newOrder, MESSAGES.SUCCESS.ORDERS.CREATED);
@@ -165,9 +164,7 @@ export class OrdersService {
           );
         }
 
-        record.qty -= quantityDifference;
         await record.save();
-
         updateOrderDto.totalPrice = record.price * updateOrderDto.quantity;
       }
       Object.assign(order, updateOrderDto);

@@ -1,5 +1,6 @@
 import {
   Controller,
+  Request,
   Get,
   Post,
   Body,
@@ -31,9 +32,13 @@ export class RecordsController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   async create(
-    @Body() request: CreateRecordRequestDTO,
+    @Request() req,
+    @Body() createRecordRequestDTO: CreateRecordRequestDTO,
   ): Promise<ApiResponse<Record>> {
-    const result = await this.recordsService.createRecord(request);
+    const result = await this.recordsService.createRecord(
+      req.user,
+      createRecordRequestDTO,
+    );
     await this.recordsService.invalidateRecordsCache();
     return result;
   }
@@ -41,10 +46,15 @@ export class RecordsController {
   @Put(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   async update(
+    @Request() req,
     @Param("id") id: string,
     @Body() updateRecordDto: UpdateRecordRequestDTO,
   ): Promise<ApiResponse<Record>> {
-    const result = await this.recordsService.updateRecord(id, updateRecordDto);
+    const result = await this.recordsService.updateRecord(
+      req.user,
+      id,
+      updateRecordDto,
+    );
     await this.recordsService.invalidateRecordsCache();
     await this.recordsService.invalidateRecordCache(id);
     return result;
@@ -66,8 +76,11 @@ export class RecordsController {
 
   @Delete(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async remove(@Param("id") id: string): Promise<ApiResponse<any>> {
-    const result = await this.recordsService.removeRecord(id);
+  async remove(
+    @Request() req,
+    @Param("id") id: string,
+  ): Promise<ApiResponse<any>> {
+    const result = await this.recordsService.removeRecord(req.user, id);
     await this.recordsService.invalidateRecordsCache();
     await this.recordsService.invalidateRecordCache(id);
     return result;

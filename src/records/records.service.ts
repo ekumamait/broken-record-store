@@ -11,6 +11,8 @@ import { CacheService } from "../cache/cache.service";
 import { MusicBrainzService } from "../musicbrainz/musicbrainz.service";
 import { MESSAGES } from "../common/constants/messages.constant";
 import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
+import { UserDto } from "../authentication/dto/user.dto";
+import { UserRole } from "../common/enums/user.enum";
 
 @Injectable()
 export class RecordsService {
@@ -42,9 +44,16 @@ export class RecordsService {
   }
 
   async createRecord(
+    user: UserDto,
     createRecordDto: CreateRecordRequestDTO,
   ): Promise<ApiResponse<Record>> {
     try {
+      if (!this.checkRecordAccess(user.role)) {
+        return ApiResponse.error(
+          MESSAGES.ERROR.UNAUTHORIZED,
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
       const existingRecord = await this.recordModel.findOne({
         artist: createRecordDto.artist,
         album: createRecordDto.album,
@@ -97,10 +106,17 @@ export class RecordsService {
   }
 
   async updateRecord(
+    user: UserDto,
     id: string,
     updateRecordDto: UpdateRecordRequestDTO,
   ): Promise<ApiResponse<Record>> {
     try {
+      if (!this.checkRecordAccess(user.role)) {
+        return ApiResponse.error(
+          MESSAGES.ERROR.UNAUTHORIZED,
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
       const record = await this.recordModel.findById(id);
       if (!record) {
         return ApiResponse.notFound(
@@ -260,8 +276,14 @@ export class RecordsService {
     }
   }
 
-  async removeRecord(id: string): Promise<ApiResponse<any>> {
+  async removeRecord(user: UserDto, id: string): Promise<ApiResponse<any>> {
     try {
+      if (!this.checkRecordAccess(user.role)) {
+        return ApiResponse.error(
+          MESSAGES.ERROR.UNAUTHORIZED,
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
       const result = await this.recordModel.findByIdAndDelete(id).exec();
       if (!result) {
         return ApiResponse.notFound(
@@ -276,5 +298,9 @@ export class RecordsService {
         error,
       );
     }
+  }
+
+  private checkRecordAccess(userRole: UserRole): boolean {
+    return userRole === UserRole.ADMIN;
   }
 }

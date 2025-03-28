@@ -8,12 +8,20 @@ import { RecordCategory, RecordFormat } from "../common/enums/record.enum";
 import { HttpModule } from "@nestjs/axios";
 import { HttpStatus } from "@nestjs/common";
 import { CreateRecordRequestDTO } from "./dto/create-record.dto";
+import { UserRole } from "../common/enums/user.enum";
 
 describe("RecordsService", () => {
   let service: RecordsService;
   let recordModel: any;
   let cacheService: CacheService;
   let musicBrainzService: MusicBrainzService;
+
+  const mockAdmin = {
+    user: {
+      email: "peterpan@mail.com",
+      role: UserRole.ADMIN,
+    },
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -66,7 +74,10 @@ describe("RecordsService", () => {
     jest.spyOn(recordModel, "create").mockResolvedValue(mockRecord);
     jest.spyOn(musicBrainzService, "getAlbumDetails").mockResolvedValue([]);
 
-    const response = await service.createRecord(createRecordDto);
+    const response = await service.createRecord(
+      mockAdmin.user,
+      createRecordDto,
+    );
     expect(response.status).toBe(HttpStatus.CREATED);
     expect(response.data._id).toBe("67e3e30a810d696976b8f05f");
     expect(recordModel.create).toHaveBeenCalledWith(createRecordDto);
@@ -88,7 +99,10 @@ describe("RecordsService", () => {
 
     jest.spyOn(recordModel, "findOne").mockResolvedValue(existingRecord);
 
-    const response = await service.createRecord(createRecordDto);
+    const response = await service.createRecord(
+      mockAdmin.user,
+      createRecordDto,
+    );
     expect(response.status).toBe(HttpStatus.CONFLICT);
     expect(response.message).toBe(
       "Record already exists with this artist, album, and format combination",
@@ -113,7 +127,11 @@ describe("RecordsService", () => {
     jest.spyOn(recordModel, "findById").mockResolvedValue(mockRecord);
     jest.spyOn(recordModel, "findOne").mockResolvedValue(existingRecord);
 
-    const response = await service.updateRecord("1", updateRecordDto);
+    const response = await service.updateRecord(
+      mockAdmin.user,
+      "1",
+      updateRecordDto,
+    );
     expect(response.status).toBe(HttpStatus.CONFLICT);
     expect(response.message).toBe(
       "Update would create a duplicate record with the same artist, album, and format",

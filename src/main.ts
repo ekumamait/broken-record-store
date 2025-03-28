@@ -4,8 +4,7 @@ import { AppConfig } from "./app.config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ValidationPipe, VersioningType } from "@nestjs/common";
 import { MESSAGES } from "./common/constants/messages.constant";
-import { NotFoundExceptionFilter } from "./common/utils/exception-filter.util";
-
+import { NotFoundExceptionFilter } from "./common/utils/not-found-exception-filter.util";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -30,16 +29,6 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("swagger", app, document);
-
-  app.use((err, _req, res, next) => {
-    if (res.headersSent) {
-      return next(err);
-    }
-    res.status(err.status || 500).json({
-      status: err.status || 500,
-      message: err.message || MESSAGES.ERROR.INTERNAL_SERVER,
-    });
-  });
 
   await app.listen(AppConfig.port);
 }

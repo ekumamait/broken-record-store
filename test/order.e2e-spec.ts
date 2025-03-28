@@ -4,11 +4,11 @@ import * as request from "supertest";
 import { AuthService } from "../src/authentication/auth.service";
 import { INestApplication } from "@nestjs/common";
 
-describe("RecordController (e2e)", () => {
+describe("OrderController (e2e)", () => {
   let app: INestApplication;
   let authService: AuthService;
   let authToken: string;
-  let recordId: string;
+  let orderId: string;
 
   jest.setTimeout(10000); // Increase timeout to 10 seconds
 
@@ -32,37 +32,41 @@ describe("RecordController (e2e)", () => {
     await app.close();
   });
 
-  it("should create a new record when authenticated", async () => {
+  it("should create a new order", async () => {
     const response = await request(app.getHttpServer())
-      .post("/records")
+      .post("/orders")
       .set("Authorization", `Bearer ${authToken}`)
-      .send({ title: "New Record", artist: "The Fake Band", year: 2021 })
+      .send({ productId: "123", quantity: 2 })
       .expect(201);
 
-    expect(response.body).toHaveProperty("title", "New Record");
-    expect(response.body).toHaveProperty("artist", "The Fake Band");
-    recordId = response.body._id; // Store the created record ID for further tests
+    // Check that response contains the correct properties
+    expect(response.body).toHaveProperty("quantity", 2);
+    expect(response.body).toHaveProperty("_id");
+    orderId = response.body._id; // Store the created order ID for further tests
   });
 
-  it("should not create record without authentication", async () => {
+  it("should not create order without authentication", async () => {
     const response = await request(app.getHttpServer())
-      .post("/records")
-      .send({
-        title: "Unauthorized Record",
-        artist: "Unknown Band",
-        year: 2021,
-      })
+      .post("/orders")
+      .send({ productId: "123", quantity: 2 })
       .expect(401); // Unauthorized without token
   });
 
-  it("should fetch records with filters", async () => {
+  it("should not create order for insufficient stock", async () => {
     const response = await request(app.getHttpServer())
-      .get("/records")
-      .query({ artist: "The Fake Band" }) // Apply any necessary filters
+      .post("/orders")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ productId: "123", quantity: 99999 }) // Assuming 99999 exceeds the stock
+      .expect(400); // Bad request for insufficient stock
+  });
+
+  it("should get user orders", async () => {
+    const response = await request(app.getHttpServer())
+      .get("/orders")
+      .set("Authorization", `Bearer ${authToken}`)
       .expect(200);
 
-    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body).toBeInstanceOf(Object);
     expect(response.body.length).toBeGreaterThan(0);
-    expect(response.body[0]).toHaveProperty("artist", "The Fake Band");
   });
 });

@@ -1,4 +1,4 @@
-import { Injectable, HttpStatus } from "@nestjs/common";
+import { Injectable, HttpStatus, ForbiddenException } from "@nestjs/common";
 import { CreateOrderRequestDTO } from "./dto/create-order.dto";
 import { UpdateOrderDto } from "./dto/update-order.dto";
 import { InjectModel } from "@nestjs/mongoose";
@@ -10,6 +10,8 @@ import { CacheService } from "../cache/cache.service";
 import { PaginatedResponse } from "../common/utils/paginated-response.util";
 import { MESSAGES } from "../common/constants/messages.constant";
 import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
+import { UserDto } from "../authentication/dto/user.dto";
+import { UserRole } from "../common/enums/user.enum";
 
 @Injectable()
 export class OrdersService {
@@ -66,15 +68,16 @@ export class OrdersService {
   }
 
   async findAll(
+    user: UserDto,
     page = 1,
     limit = 10,
   ): Promise<ApiResponse<PaginatedResponse<Order>>> {
     try {
-      // Execute count query and find query in parallel
+      const query = user.role === UserRole.ADMIN ? {} : { email: user.email };
       const [total, orders] = await Promise.all([
         this.orderModel.countDocuments(),
         this.orderModel
-          .find()
+          .find(query)
           .sort({ created: -1 })
           .skip((page - 1) * limit)
           .limit(limit)
@@ -101,10 +104,14 @@ export class OrdersService {
     }
   }
 
-  async findOne(id: string): Promise<ApiResponse<Order>> {
+  async findOne(user: UserDto, id: string): Promise<ApiResponse<Order>> {
     try {
+      const query =
+        user.role === UserRole.ADMIN
+          ? { _id: id }
+          : { _id: id, email: user.email };
       const order = await this.orderModel
-        .findById(id)
+        .findById(query)
         .populate("recordId", "artist album format price")
         .lean()
         .exec();
@@ -123,6 +130,7 @@ export class OrdersService {
   }
 
   async update(
+    user: UserDto,
     id: string,
     updateOrderDto: UpdateOrderDto,
   ): Promise<ApiResponse<Order>> {
@@ -130,6 +138,12 @@ export class OrdersService {
       const order = await this.orderModel.findById(id);
       if (!order) {
         return ApiResponse.notFound(MESSAGES.ERROR.ORDERS.ORDER_NOT_FOUND(id));
+      }
+      if (!this.checkOrderAccess(user.email, user.role, order)) {
+        return ApiResponse.error(
+          MESSAGES.ERROR.UNAUTHORIZED,
+          HttpStatus.UNAUTHORIZED,
+        );
       }
       if (
         updateOrderDto.quantity &&
@@ -172,13 +186,18 @@ export class OrdersService {
     }
   }
 
-  async remove(id: string): Promise<ApiResponse<any>> {
+  async remove(user: UserDto, id: string): Promise<ApiResponse<any>> {
     try {
       const order = await this.orderModel.findById(id);
       if (!order) {
         return ApiResponse.notFound(MESSAGES.ERROR.ORDERS.ORDER_NOT_FOUND(id));
       }
-      // If the order is being deleted, return the quantity to the record
+      if (!this.checkOrderAccess(user.email, user.role, order)) {
+        return ApiResponse.error(
+          MESSAGES.ERROR.UNAUTHORIZED,
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
       const record = await this.recordModel.findById(order.recordId);
       if (record) {
         record.qty += order.quantity;
@@ -193,5 +212,13 @@ export class OrdersService {
         error,
       );
     }
+  }
+
+  private checkOrderAccess(
+    userEmail: string,
+    userRole: UserRole,
+    order: Order,
+  ): boolean {
+    return userRole === UserRole.ADMIN || order.email === userEmail;
   }
 }

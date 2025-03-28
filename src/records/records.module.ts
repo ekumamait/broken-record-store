@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { RecordsService } from "./records.service";
 import { RecordsController } from "./records.controller";
 import { MongooseModule } from "@nestjs/mongoose";
-import { RecordSchema } from "src/schemas/record.schema";
+import { RecordSchema } from "../schemas/record.schema";
 import { MusicBrainzModule } from "../musicbrainz/musicbrainz.module";
 
 @Module({

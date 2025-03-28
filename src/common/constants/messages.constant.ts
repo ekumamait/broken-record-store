@@ -29,7 +29,8 @@ export const MESSAGES = {
     NOT_FOUND: "Resource not found",
     BAD_REQUEST: "Bad request",
     UNAUTHORIZED: "Unauthorized",
-    INTERNAL_SERVER: "Internal server error",
+    INTERNAL_SERVER:
+      "Oops! The problem is not on your side. Hang on, we will fix this soon",
     RECORDS: {
       NOT_FOUND: "Record not found",
       RECORD_NOT_FOUND: (id: string) => `Record with ID ${id} not found`,
@@ -64,6 +65,7 @@ export const MESSAGES = {
       USER_EXISTS: "User already exists",
       INACTIVE_USER: "User account is inactive",
       LOGIN_FAILED: "Login failed",
+      USER_DOESNT_EXISTS: "User does not exist",
     },
   },
 };

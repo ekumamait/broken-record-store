@@ -1,4 +1,4 @@
-import { NotFoundExceptionFilter } from "./exception-filter.util";
+import { NotFoundExceptionFilter } from "./not-found-exception-filter.util";
 import { NotFoundException } from "@nestjs/common";
 import { MESSAGES } from "../constants/messages.constant";
 import { ExecutionContext } from "@nestjs/common";

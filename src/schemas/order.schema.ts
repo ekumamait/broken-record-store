@@ -6,6 +6,9 @@ export class Order extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: "Record", required: true })
   recordId: MongooseSchema.Types.ObjectId;
 
+  @Prop({ required: true })
+  email: string;
+
   @Prop({ required: true, min: 1 })
   quantity: number;
 

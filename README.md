@@ -180,4 +180,4 @@ Here is an example link to the deployed api:
 
 1: Implement admin panel UI
 
-2: Deploy api to GCP
+2: Deploy API

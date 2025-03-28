@@ -24,10 +24,10 @@ Welcome to the Broken Record Store API—a modern, feature-rich API for managing
   - CRUD operations for vinyl records, CDs, and other music formats
   - MusicBrainz integration for fetching detailed album information
   - Advanced filtering and search capabilities
-  - Automatic track listing import from MusicBrainz
+  - Automatic track listing from MusicBrainz
 
 - **Order Processing**:
-  - Create and manage customer orders
+  - Create and manage orders
   - Real-time inventory tracking
   - Order history and status management
 
@@ -104,20 +104,20 @@ The API follows REST principles and uses modern TypeScript features while mainta
 
 ###### AVAILABLE ROUTES
 
-| EndPoint | Methods | Functionality                   | Access |
-| -------- | ------- | ------------------------------- | ------- |
-| register  | POST     | `create a new user who is instantly set as admin` | PUBLIC |
-| login  | POST     | `login to get access token to access admin routes` | PUBLIC |
-| records  | POST     | `create a new record with or without mbid` | ADMIN |
-| records/:id  | PUT     | `update record details` | ADMIN |
-| records  | GET     | `search for records in our catalog` | PUBLIC |
-| records/:id  | GET     | `fetch a single record from our catalog`| PUBLIC |
-| records/:id  | DELETE     | `delete a record from the catalog` |ADMIN |
-| orders  | POST     | `create orders for records` | PUBLIC |
-| orders/:id  | PATCH     | `update your order for a record` | PUBLIC |
-| orders  | GET     | `fetch all orders for records` | PUBLIC |
-| orders/:id  | GET     | `fetch a single order for a record`| PUBLIC |
-| orders/:id  | DELETE     | `delete an order for a record` |PUBLIC |
+| EndPoint | Methods | Functionality                   | Access | Authentication |
+| -------- | ------- | ------------------------------- | ------- | ------- |
+| `register`  | `POST`     | `create a new user who is instantly set as admin` | `USER` | `FALSE` |
+| `login`  | `POST`     | `login to get access token to access admin routes` | `USER` |`FALSE` |
+| `records`  | `POST`     | `create a new record with or without mbid` | `ADMIN` |`TRUE` |
+| `records/:id`  | `PUT`     | `update record details` | `ADMIN` |`TRUE` |
+| `records`  | `GET`     | `search for records in our catalog` | `USER` |`FALSE` |
+| `records/:id`  | `GET`     | `fetch a single record from our catalog`| `USER` |`FALSE` |
+| `records/:id`  | `DELETE`     | `delete a record from the catalog` |`ADMIN` |`TRUE` |
+| `orders`  | `POST`     | `create orders for records` | `USER` |`TRUE` |
+| `orders/:id`  | `PATCH`     | `update your order for a record` | `USER` |`TRUE` |
+| `orders`  | `GET`     | `fetch all orders for records` | `USER` | `TRUE` |
+| `orders/:id`  | `GET`     | `fetch a single order for a record`| `USER` |`TRUE` |
+| `orders/:id`  | `DELETE`     | `delete an order for a record` |`ADMIN` |`TRUE` |
 
 ---
 
@@ -161,7 +161,7 @@ Here’s an example of data to create an order for a record:
 - command to run tests with coverage:
   `npm run test:cov`
 
-- [ ] End-to-end Tests
+- [x] End-to-end Tests
 
 - command to run e2e tests with coverage:
   `npm run test:e2e`
@@ -180,4 +180,4 @@ Here is an example link to the deployed api:
 
 1: Implement admin panel UI
 
-2: Deploy api to GCP
+2: Deploy API

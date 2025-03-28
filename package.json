@@ -115,7 +115,7 @@
     "*.{js,ts}": [
       "eslint --fix",
       "prettier --write",
-      "jest --bail --coverage --findRelatedTests"
+      "jest --bail --coverage --findRelatedTests --passWithNoTests"
     ]
   }
 }

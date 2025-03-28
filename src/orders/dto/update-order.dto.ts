@@ -1,4 +1,12 @@
-import { IsOptional, IsNumber, Min, IsEnum, IsMongoId } from "class-validator";
+import {
+  IsOptional,
+  IsNumber,
+  Min,
+  IsEnum,
+  IsMongoId,
+  IsEmail,
+  IsNotEmpty,
+} from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 
@@ -7,6 +15,11 @@ export class UpdateOrderDto {
   @IsOptional()
   @IsMongoId()
   recordId?: string;
+
+  @ApiProperty()
+  @IsEmail()
+  @IsOptional()
+  email?: string;
 
   @ApiProperty()
   @IsOptional()

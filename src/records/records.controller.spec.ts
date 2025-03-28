@@ -8,6 +8,8 @@ import { CacheService } from "../cache/cache.service";
 import { ApiResponse } from "../common/utils/api-response.util";
 import { FilterRecordDto } from "./dto/filter-record.dto";
 import { PaginatedResponse } from "../common/utils/paginated-response.util";
+import { UserRole } from "../common/enums/user.enum";
+import { UpdateRecordRequestDTO } from "./dto/update-record.dto";
 
 describe("RecordController", () => {
   let recordsController: RecordsController;
@@ -22,6 +24,20 @@ describe("RecordController", () => {
     format: RecordFormat.VINYL,
     category: RecordCategory.ALTERNATIVE,
   } as unknown as Record;
+
+  const mockRequest = {
+    user: {
+      email: "johndoe@mail.com",
+      role: UserRole.USER,
+    },
+  };
+
+  const mockAdminRequest = {
+    user: {
+      email: "peterpan@mail.com",
+      role: UserRole.ADMIN,
+    },
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -39,14 +55,6 @@ describe("RecordController", () => {
             invalidateRecordCache: jest.fn(),
           },
         },
-        {
-          provide: CacheService,
-          useValue: {
-            get: jest.fn(),
-            set: jest.fn(),
-            invalidateByPattern: jest.fn(),
-          },
-        },
       ],
     }).compile();
 
@@ -54,12 +62,8 @@ describe("RecordController", () => {
     recordsService = module.get<RecordsService>(RecordsService);
   });
 
-  it("should be defined", () => {
-    expect(recordsController).toBeDefined();
-  });
-
   describe("create", () => {
-    it("should create a new record", async () => {
+    it("should create a new record when admin", async () => {
       const createRecordDto: CreateRecordRequestDTO = {
         artist: "Test",
         album: "Test Record",
@@ -73,13 +77,36 @@ describe("RecordController", () => {
       jest
         .spyOn(recordsService, "createRecord")
         .mockResolvedValue(expectedResponse);
-      jest.spyOn(recordsService, "invalidateRecordsCache").mockResolvedValue();
 
-      const result = await recordsController.create(createRecordDto);
+      const result = await recordsController.create(
+        mockAdminRequest,
+        createRecordDto,
+      );
 
       expect(result).toEqual(expectedResponse);
-      expect(recordsService.createRecord).toHaveBeenCalledWith(createRecordDto);
-      expect(recordsService.invalidateRecordsCache).toHaveBeenCalled();
+      expect(recordsService.createRecord).toHaveBeenCalledWith(
+        mockAdminRequest.user,
+        createRecordDto,
+      );
+    });
+
+    it("should not allow non-admin users to create records", async () => {
+      const createRecordDto: CreateRecordRequestDTO = {
+        artist: "Test",
+        album: "Test Record",
+        price: 100,
+        qty: 10,
+        format: RecordFormat.VINYL,
+        category: RecordCategory.ALTERNATIVE,
+      };
+
+      jest
+        .spyOn(recordsService, "createRecord")
+        .mockRejectedValue(new Error("Unauthorized"));
+
+      await expect(
+        recordsController.create(mockRequest, createRecordDto),
+      ).rejects.toThrow("Unauthorized");
     });
   });
 
@@ -91,12 +118,13 @@ describe("RecordController", () => {
       };
 
       const paginatedResponse = new PaginatedResponse([mockRecord], 1, 1, 10);
-
       const expectedResponse = ApiResponse.success(paginatedResponse);
+
       jest
         .spyOn(recordsService, "findAllRecords")
         .mockResolvedValue(expectedResponse);
 
+      // Remove mockRequest parameter
       const result = await recordsController.findAll(filterDto);
 
       expect(result).toEqual(expectedResponse);
@@ -111,6 +139,7 @@ describe("RecordController", () => {
         .spyOn(recordsService, "findOneRecord")
         .mockResolvedValue(expectedResponse);
 
+      // Remove mockRequest parameter
       const result = await recordsController.findOne("1");
 
       expect(result).toEqual(expectedResponse);
@@ -119,8 +148,8 @@ describe("RecordController", () => {
   });
 
   describe("update", () => {
-    it("should update a record", async () => {
-      const updateDto = {
+    it("should update a record when admin", async () => {
+      const updateDto: UpdateRecordRequestDTO = {
         price: 150,
         qty: 20,
       };
@@ -129,20 +158,39 @@ describe("RecordController", () => {
       jest
         .spyOn(recordsService, "updateRecord")
         .mockResolvedValue(expectedResponse);
-      jest.spyOn(recordsService, "invalidateRecordsCache").mockResolvedValue();
-      jest.spyOn(recordsService, "invalidateRecordCache").mockResolvedValue();
 
-      const result = await recordsController.update("1", updateDto);
+      const result = await recordsController.update(
+        mockAdminRequest,
+        "1",
+        updateDto,
+      );
 
       expect(result).toEqual(expectedResponse);
-      expect(recordsService.updateRecord).toHaveBeenCalledWith("1", updateDto);
-      expect(recordsService.invalidateRecordsCache).toHaveBeenCalled();
-      expect(recordsService.invalidateRecordCache).toHaveBeenCalledWith("1");
+      expect(recordsService.updateRecord).toHaveBeenCalledWith(
+        mockAdminRequest.user,
+        "1",
+        updateDto,
+      );
+    });
+
+    it("should not allow non-admin users to update records", async () => {
+      const updateDto: UpdateRecordRequestDTO = {
+        price: 150,
+        qty: 20,
+      };
+
+      jest
+        .spyOn(recordsService, "updateRecord")
+        .mockRejectedValue(new Error("Unauthorized"));
+
+      await expect(
+        recordsController.update(mockRequest, "1", updateDto),
+      ).rejects.toThrow("Unauthorized");
     });
   });
 
   describe("remove", () => {
-    it("should remove a record", async () => {
+    it("should remove a record when admin", async () => {
       const expectedResponse = ApiResponse.success(
         null,
         "Record deleted successfully",
@@ -150,15 +198,24 @@ describe("RecordController", () => {
       jest
         .spyOn(recordsService, "removeRecord")
         .mockResolvedValue(expectedResponse);
-      jest.spyOn(recordsService, "invalidateRecordsCache").mockResolvedValue();
-      jest.spyOn(recordsService, "invalidateRecordCache").mockResolvedValue();
 
-      const result = await recordsController.remove("1");
+      const result = await recordsController.remove(mockAdminRequest, "1");
 
       expect(result).toEqual(expectedResponse);
-      expect(recordsService.removeRecord).toHaveBeenCalledWith("1");
-      expect(recordsService.invalidateRecordsCache).toHaveBeenCalled();
-      expect(recordsService.invalidateRecordCache).toHaveBeenCalledWith("1");
+      expect(recordsService.removeRecord).toHaveBeenCalledWith(
+        mockAdminRequest.user,
+        "1",
+      );
+    });
+
+    it("should not allow non-admin users to remove records", async () => {
+      jest
+        .spyOn(recordsService, "removeRecord")
+        .mockRejectedValue(new Error("Unauthorized"));
+
+      await expect(recordsController.remove(mockRequest, "1")).rejects.toThrow(
+        "Unauthorized",
+      );
     });
   });
 });

@@ -3,73 +3,140 @@ import { INestApplication } from "@nestjs/common";
 import * as request from "supertest";
 import { AppModule } from "../src/app.module";
 import { RecordFormat, RecordCategory } from "../src/common/enums/record.enum";
+import { getModelToken } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { Record } from "../src/schemas/record.schema";
+import { User } from "../src/schemas/user.schema";
+import { UserRole } from "../src/common/enums/user.enum";
 
 describe("RecordController (e2e)", () => {
   let app: INestApplication;
+  let authToken: string;
   let recordId: string;
-  let recordModel;
+  let recordModel: Model<Record>;
+  let userModel: Model<User>;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    recordModel = app.get("RecordModel");
+    recordModel = moduleFixture.get<Model<Record>>(getModelToken("Record"));
+    userModel = moduleFixture.get<Model<User>>(getModelToken("User"));
     await app.init();
-  });
 
-  // Test to create a record
-  it("should create a new record", async () => {
-    const createRecordDto = {
-      artist: "The Beatles",
-      album: "Abbey Road",
-      price: 25,
-      qty: 10,
-      format: RecordFormat.VINYL,
-      category: RecordCategory.ROCK,
-    };
+    await userModel.deleteMany({});
+    await recordModel.deleteMany({});
 
-    const response = await request(app.getHttpServer())
-      .post("/records")
-      .send(createRecordDto)
-      .expect(201);
+    const registerResponse = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "admin@example.com",
+        password: "Admin123!",
+        role: UserRole.ADMIN,
+      });
 
-    recordId = response.body._id;
-    expect(response.body).toHaveProperty("artist", "The Beatles");
-    expect(response.body).toHaveProperty("album", "Abbey Road");
-  });
+    expect(registerResponse.status).toBe(201);
 
-  it("should create a new record and fetch it with filters", async () => {
-    const createRecordDto = {
-      artist: "The Fake Band",
-      album: "Fake Album",
-      price: 25,
-      qty: 10,
-      format: RecordFormat.VINYL,
-      category: RecordCategory.ROCK,
-    };
+    const loginResponse = await request(app.getHttpServer())
+      .post("/auth/login")
+      .send({
+        email: "admin@example.com",
+        password: "Admin123!",
+      });
 
-    const createResponse = await request(app.getHttpServer())
-      .post("/records")
-      .send(createRecordDto)
-      .expect(201);
-
-    recordId = createResponse.body._id;
-
-    const response = await request(app.getHttpServer())
-      .get("/records?artist=The Fake Band")
-      .expect(200);
-    expect(response.body.length).toBe(1);
-    expect(response.body[0]).toHaveProperty("artist", "The Fake Band");
-  });
-  afterEach(async () => {
-    if (recordId) {
-      await recordModel.findByIdAndDelete(recordId);
-    }
+    expect(loginResponse.status).toBe(201);
+    authToken = loginResponse.body.data?.token;
+    if (!authToken) throw new Error("Login failed: No token in response");
   });
 
   afterAll(async () => {
+    await recordModel.deleteMany({});
+    await userModel.deleteMany({});
     await app.close();
+  });
+
+  it("should create a new record when authenticated", async () => {
+    const createRecordDto = {
+      artist: "The Fake Band",
+      album: "Fake Album",
+      price: 20.99,
+      qty: 10,
+      format: RecordFormat.VINYL,
+      category: RecordCategory.ROCK,
+    };
+
+    const response = await request(app.getHttpServer())
+      .post("/records")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send(createRecordDto)
+      .expect(201);
+
+    expect(response.body.status).toBe(201);
+    expect(response.body.data).toHaveProperty("artist", "The Fake Band");
+    expect(response.body.data).toHaveProperty("album", "Fake Album");
+    expect(response.body.data).toHaveProperty("price", 20.99);
+    expect(response.body.data).toHaveProperty("qty", 10);
+    expect(response.body.data).toHaveProperty("format", "Vinyl");
+    expect(response.body.data).toHaveProperty("category", "Rock");
+    expect(response.body.data).toHaveProperty("_id");
+
+    recordId = response.body.data._id;
+  });
+
+  it("should not create record without authentication", async () => {
+    const createRecordDto = {
+      artist: "The Fake Band",
+      album: "Fake Album",
+      price: 20.99,
+      qty: 10,
+      format: RecordFormat.VINYL,
+      category: RecordCategory.ROCK,
+    };
+
+    await request(app.getHttpServer())
+      .post("/records")
+      .send(createRecordDto)
+      .expect(401);
+  });
+
+  it("should fetch records with filters", async () => {
+    const response = await request(app.getHttpServer())
+      .get("/records")
+      .query({
+        page: 1,
+        limit: 10,
+        category: RecordCategory.ROCK,
+      })
+      .expect(200);
+
+    expect(response.body.status).toBe(200);
+    expect(response.body.data).toHaveProperty("items");
+    expect(Array.isArray(response.body.data.items)).toBe(true);
+    expect(response.body.data.items.length).toBeGreaterThan(0);
+    expect(response.body.data.meta).toHaveProperty("totalItems");
+    expect(response.body.data.meta).toHaveProperty("currentPage", "1");
+  });
+
+  it("should get a specific record", async () => {
+    const response = await request(app.getHttpServer())
+      .get(`/records/${recordId}`)
+      .expect(200);
+
+    expect(response.body.status).toBe(200);
+    expect(response.body.data).toHaveProperty("_id", recordId);
+    expect(response.body.data).toHaveProperty("artist", "The Fake Band");
+    expect(response.body.data).toHaveProperty("album", "Fake Album");
+  });
+
+  it("should delete a record when authenticated as admin", async () => {
+    await request(app.getHttpServer())
+      .delete(`/records/${recordId}`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(200);
+
+    const deletedRecord = await recordModel.findById(recordId);
+    expect(deletedRecord).toBeNull();
   });
 });

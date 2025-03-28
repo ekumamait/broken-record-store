@@ -191,15 +191,12 @@ export class RecordsService {
         sortDirection = "asc",
       } = filterDto;
 
-      // Build the filter object
       const filter: any = {};
 
       if (q) {
-        // Using $text search if you have a text index set up
         if (await this.hasTextIndex()) {
           filter.$text = { $search: q };
         } else {
-          // Fallback to regex if no text index
           filter.$or = [
             { artist: { $regex: q, $options: "i" } },
             { album: { $regex: q, $options: "i" } },
@@ -213,11 +210,9 @@ export class RecordsService {
       if (format) filter.format = format;
       if (category) filter.category = category;
 
-      // Create sort object
       const sort: any = {};
       sort[sortBy] = sortDirection === "asc" ? 1 : -1;
 
-      // Execute count query and find query in parallel
       const [total, records] = await Promise.all([
         this.recordModel.countDocuments(filter),
         this.recordModel
@@ -248,7 +243,6 @@ export class RecordsService {
     }
   }
 
-  // Helper method to check if text index exists
   private async hasTextIndex(): Promise<boolean> {
     try {
       const indexes = await this.recordModel.collection.indexes();

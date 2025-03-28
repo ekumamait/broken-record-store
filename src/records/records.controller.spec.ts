@@ -124,7 +124,6 @@ describe("RecordController", () => {
         .spyOn(recordsService, "findAllRecords")
         .mockResolvedValue(expectedResponse);
 
-      // Remove mockRequest parameter
       const result = await recordsController.findAll(filterDto);
 
       expect(result).toEqual(expectedResponse);
@@ -139,7 +138,6 @@ describe("RecordController", () => {
         .spyOn(recordsService, "findOneRecord")
         .mockResolvedValue(expectedResponse);
 
-      // Remove mockRequest parameter
       const result = await recordsController.findOne("1");
 
       expect(result).toEqual(expectedResponse);

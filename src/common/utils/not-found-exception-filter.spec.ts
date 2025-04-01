@@ -35,16 +35,14 @@ describe("NotFoundExceptionFilter", () => {
     filter.catch(mockException, mockContext);
 
     expect(mockResponse.status).toHaveBeenCalledWith(404);
-    expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: null,
-        status: 404,
-        message: MESSAGES.ERROR.NOT_FOUND,
-        error: expect.objectContaining({
-          timestamp: expect.any(String),
-          path: "/test-url",
-        }),
-      }),
-    );
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      status: 404,
+      message: MESSAGES.ERROR.NOT_FOUND,
+      data: {
+        timestamp: expect.any(String),
+        path: "/test-url",
+      },
+      error: undefined,
+    });
   });
 });

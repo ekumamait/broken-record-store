@@ -4,7 +4,6 @@ import { JwtService } from "@nestjs/jwt";
 import { getModelToken } from "@nestjs/mongoose";
 import { User } from "../schemas/user.schema";
 import { UserRole } from "../common/enums/user.enum";
-import { ApiResponse } from "../common/utils/api-response.util";
 import { UnauthorizedException } from "@nestjs/common";
 import { MESSAGES } from "../common/constants/messages.constant";
 import * as bcrypt from "bcrypt";
@@ -21,6 +20,10 @@ describe("AuthService", () => {
     role: UserRole.ADMIN,
     isActive: true,
   };
+
+  beforeAll(() => {
+    process.env.NODE_ENV = "test";
+  });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -67,6 +70,9 @@ describe("AuthService", () => {
         message: MESSAGES.SUCCESS.AUTH.REGISTERED,
         data: {
           token: expect.any(String),
+          role: expect.stringMatching(
+            new RegExp(`^${Object.values(UserRole).join("|")}$`),
+          ),
         },
       });
       expect(userModel.create).toHaveBeenCalled();
@@ -115,6 +121,9 @@ describe("AuthService", () => {
           message: MESSAGES.SUCCESS.AUTH.LOGGED_IN,
           data: {
             token: expect.any(String),
+            role: expect.stringMatching(
+              new RegExp(`^${Object.values(UserRole).join("|")}$`),
+            ),
           },
           error: undefined,
         }),

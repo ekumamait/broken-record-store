@@ -48,6 +48,10 @@ describe("MusicBrainzService", () => {
     } as any,
   });
 
+  beforeAll(() => {
+    process.env.NODE_ENV = "test";
+  });
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [

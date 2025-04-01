@@ -9,7 +9,6 @@ describe("UseCache Decorator", () => {
     };
 
     const decorator = UseCache(options);
-    const metadata = {};
     const target = {};
 
     decorator(target);
@@ -28,7 +27,6 @@ describe("UseCache Decorator", () => {
     };
 
     const decorator = UseCache(options);
-    const metadata = {};
     const target = {};
 
     decorator(target);

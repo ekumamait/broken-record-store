@@ -9,6 +9,7 @@ import {
   Put,
   Delete,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import { Record } from "../schemas/record.schema";
 import { ApiTags } from "@nestjs/swagger";
@@ -22,7 +23,10 @@ import { ApiResponse } from "../common/utils/api-response.util";
 import { FilterRecordDto } from "./dto/filter-record.dto";
 import { PaginatedResponse } from "../common/utils/paginated-response.util";
 import { UseCache } from "../cache/cache.decorator";
+import { CacheInterceptor } from "../cache/cache.interceptor";
 import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
+import { Roles } from "../authentication/decorators/roles.decorator";
+import { UserRole } from "../common/enums/user.enum";
 
 @ApiTags("Records")
 @Controller({ path: "records", version: "1" })
@@ -30,6 +34,7 @@ export class RecordsController {
   constructor(private readonly recordsService: RecordsService) {}
 
   @Post()
+  @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async create(
     @Request() req,
@@ -44,6 +49,7 @@ export class RecordsController {
   }
 
   @Put(":id")
+  @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async update(
     @Request() req,
@@ -61,6 +67,7 @@ export class RecordsController {
   }
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   @UseCache({ keyPrefix: CACHE_CONSTANTS.KEYS.RECORDS_LIST, ttl: 300 })
   async findAll(
     @Query() filterDto: FilterRecordDto,
@@ -69,12 +76,14 @@ export class RecordsController {
   }
 
   @Get(":id")
-  @UseCache({ keyPrefix: CACHE_CONSTANTS.KEYS.RECORDS_DETAIL, ttl: 600 })
+  @UseInterceptors(CacheInterceptor)
+  @UseCache({ keyPrefix: CACHE_CONSTANTS.KEYS.RECORDS_DETAIL, ttl: 300 })
   async findOne(@Param("id") id: string): Promise<ApiResponse<Record>> {
     return await this.recordsService.findOneRecord(id);
   }
 
   @Delete(":id")
+  @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async remove(
     @Request() req,

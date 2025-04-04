@@ -4,11 +4,13 @@ import { RecordsController } from "./records.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 import { RecordSchema } from "../schemas/record.schema";
 import { MusicBrainzModule } from "../musicbrainz/musicbrainz.module";
+import { CacheModule } from "../cache/cache.module";
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: "Record", schema: RecordSchema }]),
     MusicBrainzModule,
+    CacheModule,
   ],
   controllers: [RecordsController],
   providers: [RecordsService],

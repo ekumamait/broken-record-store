@@ -29,5 +29,16 @@ services:
          members: [
             { _id: 0, host: "localhost:27017" }
          ]
-      })
+      });
+      sleep(1000);
+
+      db = db.getSiblingDB("records");
+      db.createCollection("records");
+      db.createCollection("users");
+      db.createCollection("orders");
+
+      db = db.getSiblingDB("records-test");
+      db.createCollection("records");
+      db.createCollection("users");
+      db.createCollection("orders");
       '

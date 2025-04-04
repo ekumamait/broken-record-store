@@ -1,4 +1,4 @@
-import { Injectable, HttpStatus, ForbiddenException } from "@nestjs/common";
+import { Injectable, HttpStatus } from "@nestjs/common";
 import { CreateOrderRequestDTO } from "./dto/create-order.dto";
 import { UpdateOrderDto } from "./dto/update-order.dto";
 import { InjectModel } from "@nestjs/mongoose";
@@ -45,7 +45,7 @@ export class OrdersService {
       }
       if (record.qty < createOrderDto.quantity) {
         return ApiResponse.error(
-          `${MESSAGES.ERROR.ORDERS.INSUFFICIENT_STOCK}: ${createOrderDto.quantity}, Available: ${record.qty}`,
+          `${MESSAGES.ERROR.ORDERS.INSUFFICIENT_STOCK} - Available Stock: ${record.qty}`,
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -159,7 +159,7 @@ export class OrdersService {
 
         if (quantityDifference > 0 && record.qty < quantityDifference) {
           return ApiResponse.error(
-            `${MESSAGES.ERROR.ORDERS.INSUFFICIENT_STOCK}: ${quantityDifference}, Available: ${record.qty}`,
+            `${MESSAGES.ERROR.ORDERS.INSUFFICIENT_STOCK} - Available: ${record.qty}`,
             HttpStatus.BAD_REQUEST,
           );
         }
@@ -190,11 +190,6 @@ export class OrdersService {
           MESSAGES.ERROR.UNAUTHORIZED,
           HttpStatus.UNAUTHORIZED,
         );
-      }
-      const record = await this.recordModel.findById(order.recordId);
-      if (record) {
-        record.qty += order.quantity;
-        await record.save();
       }
       await this.orderModel.findByIdAndDelete(id);
       return ApiResponse.success(null, MESSAGES.SUCCESS.ORDERS.DELETED);

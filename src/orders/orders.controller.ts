@@ -9,6 +9,7 @@ import {
   Param,
   Delete,
   Query,
+  UseInterceptors,
 } from "@nestjs/common";
 import { OrdersService } from "./orders.service";
 import { JwtAuthGuard } from "../authentication/guards/jwt.guard";
@@ -19,8 +20,11 @@ import { ApiTags } from "@nestjs/swagger";
 import { ApiResponse } from "../common/utils/api-response.util";
 import { Order } from "../schemas/order.schema";
 import { UseCache } from "../cache/cache.decorator";
+import { CacheInterceptor } from "../cache/cache.interceptor";
 import { PaginatedResponse } from "../common/utils/paginated-response.util";
 import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
+import { Roles } from "../authentication/decorators/roles.decorator";
+import { UserRole } from "../common/enums/user.enum";
 
 @ApiTags("Orders")
 @Controller({ path: "orders", version: "1" })
@@ -28,6 +32,7 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
+  @Roles(UserRole.USER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async create(
     @Request() req,
@@ -41,6 +46,7 @@ export class OrdersController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseInterceptors(CacheInterceptor)
   @UseCache({ keyPrefix: CACHE_CONSTANTS.KEYS.ORDERS_LIST, ttl: 300 })
   async findAll(
     @Request() req,
@@ -52,6 +58,7 @@ export class OrdersController {
 
   @Get(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseInterceptors(CacheInterceptor)
   @UseCache({ keyPrefix: CACHE_CONSTANTS.KEYS.ORDERS_DETAIL, ttl: 300 })
   async findOne(
     @Request() req,

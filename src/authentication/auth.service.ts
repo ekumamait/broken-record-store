@@ -36,11 +36,14 @@ export class AuthService {
     const user = await this.userModel.create({
       ...registerDto,
       password: hashedPassword,
-      role: UserRole.ADMIN, // set First User as admin then remove this line
+      // role: UserRole.ADMIN, // set First User as admin then remove this line
     });
 
     const token = this.generateToken(user);
-    return ApiResponse.success({ token }, MESSAGES.SUCCESS.AUTH.REGISTERED);
+    return ApiResponse.success(
+      { token, role: user.role },
+      MESSAGES.SUCCESS.AUTH.REGISTERED,
+    );
   }
 
   async login(loginDto: LoginDto): Promise<ApiResponse<any>> {
@@ -57,7 +60,10 @@ export class AuthService {
     }
 
     const token = this.generateToken(user);
-    return ApiResponse.success({ token }, MESSAGES.SUCCESS.AUTH.LOGGED_IN);
+    return ApiResponse.success(
+      { token, role: user.role },
+      MESSAGES.SUCCESS.AUTH.LOGGED_IN,
+    );
   }
 
   private generateToken(user: User): string {

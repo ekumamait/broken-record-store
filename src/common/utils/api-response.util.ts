@@ -38,17 +38,17 @@ export class ApiResponse<T> {
     status = HttpStatus.INTERNAL_SERVER_ERROR,
     error?: any,
   ): ApiResponse<T> {
-    return new ApiResponse<T>(status, message, null, error);
+    return new ApiResponse<T>(status, message, error);
   }
 
   static notFound<T>(
     message = "Resource not found",
     error?: any,
   ): ApiResponse<T> {
-    return new ApiResponse<T>(HttpStatus.NOT_FOUND, message, null, error);
+    return new ApiResponse<T>(HttpStatus.NOT_FOUND, message, error);
   }
 
   static badRequest<T>(message = "Bad request", error?: any): ApiResponse<T> {
-    return new ApiResponse<T>(HttpStatus.BAD_REQUEST, message, null, error);
+    return new ApiResponse<T>(HttpStatus.BAD_REQUEST, message, error);
   }
 }

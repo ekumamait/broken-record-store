@@ -35,10 +35,16 @@ export class CacheInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const cacheKey = this.cacheService.generateKey(keyPrefix, {
-      ...request.query,
-      ...request.params,
-    });
+    let cacheKey: string;
+
+    if (keyPrefix === CACHE_CONSTANTS.KEYS.RECORDS_LIST) {
+      cacheKey = this.cacheService.generateRecordListKey(request.query);
+    } else {
+      cacheKey = this.cacheService.generateKey(keyPrefix, {
+        ...request.query,
+        ...request.params,
+      });
+    }
 
     const cachedData = await this.cacheService.get(cacheKey);
     if (cachedData) {

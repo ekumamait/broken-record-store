@@ -13,7 +13,6 @@ import { UserRole } from "../common/enums/user.enum";
 describe("RecordsService", () => {
   let service: RecordsService;
   let recordModel: any;
-  let cacheService: CacheService;
   let musicBrainzService: MusicBrainzService;
 
   const mockAdmin = {
@@ -47,7 +46,6 @@ describe("RecordsService", () => {
 
     service = module.get<RecordsService>(RecordsService);
     recordModel = module.get(getModelToken("Record"));
-    cacheService = module.get<CacheService>(CacheService);
     musicBrainzService = module.get<MusicBrainzService>(MusicBrainzService);
   });
 

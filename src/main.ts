@@ -3,7 +3,6 @@ import { AppModule } from "./app.module";
 import { AppConfig } from "./app.config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ValidationPipe, VersioningType } from "@nestjs/common";
-import { MESSAGES } from "./common/constants/messages.constant";
 import { NotFoundExceptionFilter } from "./common/utils/not-found-exception-filter.util";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

@@ -4,6 +4,13 @@ import { getModelToken } from "@nestjs/mongoose";
 import { User } from "../../schemas/user.schema";
 import { UnauthorizedException } from "@nestjs/common";
 
+// Mock AppConfig for testing
+jest.mock("../../app.config", () => ({
+  AppConfig: {
+    jwt_secret: "test-jwt-secret-for-testing",
+  },
+}));
+
 describe("JwtStrategy", () => {
   let strategy: JwtStrategy;
   let userModel: any;

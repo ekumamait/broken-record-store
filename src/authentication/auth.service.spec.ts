@@ -4,7 +4,6 @@ import { JwtService } from "@nestjs/jwt";
 import { getModelToken } from "@nestjs/mongoose";
 import { User } from "../schemas/user.schema";
 import { UserRole } from "../common/enums/user.enum";
-import { ApiResponse } from "../common/utils/api-response.util";
 import { UnauthorizedException } from "@nestjs/common";
 import { MESSAGES } from "../common/constants/messages.constant";
 import * as bcrypt from "bcrypt";

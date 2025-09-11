@@ -4,7 +4,6 @@ import { RecordsService } from "./records.service";
 import { CreateRecordRequestDTO } from "./dto/create-record.dto";
 import { Record } from "../schemas/record.schema";
 import { RecordCategory, RecordFormat } from "../common/enums/record.enum";
-import { CacheService } from "../cache/cache.service";
 import { ApiResponse } from "../common/utils/api-response.util";
 import { FilterRecordDto } from "./dto/filter-record.dto";
 import { PaginatedResponse } from "../common/utils/paginated-response.util";

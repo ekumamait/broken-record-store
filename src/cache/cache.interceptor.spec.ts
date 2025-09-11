@@ -4,7 +4,6 @@ import { CacheService } from "./cache.service";
 import { Reflector } from "@nestjs/core";
 import { CallHandler, ExecutionContext } from "@nestjs/common";
 import { Observable, of, firstValueFrom } from "rxjs";
-import { CACHE_CONSTANTS } from "../common/constants/cache.constants";
 
 describe("CacheInterceptor", () => {
   let interceptor: CacheInterceptor;
